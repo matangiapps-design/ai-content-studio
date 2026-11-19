@@ -10,8 +10,9 @@ services:
       - ./videofx_outputs:/app/videofx_outputs
     environment:
       STUDIO_API_TOKEN: ${STUDIO_API_TOKEN:?Set STUDIO_API_TOKEN in .env}
+      STUDIO_AUTH_DISABLED: ${STUDIO_AUTH_DISABLED:-false}
       STUDIO_SECURE_COOKIES: ${STUDIO_SECURE_COOKIES:-true}
-      CORS_ORIGINS: ${STUDIO_PUBLIC_ORIGIN:?Set STUDIO_PUBLIC_ORIGIN in .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:?Set CORS_ORIGINS in .env}
       YOUTUBE_REDIRECT_URI: ${STUDIO_PUBLIC_ORIGIN}/api/social/youtube/callback
       STUDIO_CONFIG_FILE: /app/data/config.json
     healthcheck:
