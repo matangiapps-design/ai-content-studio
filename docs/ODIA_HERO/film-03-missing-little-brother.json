@@ -1,0 +1,94 @@
+{
+  "project": "ODIA HERO",
+  "film_id": "odia-hero-003",
+  "title_en": "Biku and the Missing Little Brother",
+  "title_or": "ବିକୁ ଖୋଜିଲା ହଜିଯାଇଥିବା ଭାଇକୁ",
+  "target_duration_seconds": 244,
+  "target_duration_timecode": "04:04",
+  "video_model_target": "Wan 3.0",
+  "model_integration_status": "not_connected",
+  "render_status": "not_rendered",
+  "delivery": {
+    "aspect_ratio": "16:9",
+    "target_width": 3840,
+    "target_height": 2160,
+    "fps": 24,
+    "upscale_after_generation": true
+  },
+  "character": {
+    "name": "Biku",
+    "description": "Small white stickman, round white head, expressive black eyes, thin black arms and legs, bright red cape; same design across shots."
+  },
+  "story": "During the Rath Yatra, a young girl realises her little brother is missing. Biku listens, reassures her, and takes her to the official help point without leaving her alone. Volunteers follow the event's lost-child procedure, locate the boy and reunite the family. The story ends with a message about kindness and asking trusted helpers for help.",
+  "scenes": [
+    {
+      "start": "00:00",
+      "end": "00:20",
+      "beat": "Puri Rath Yatra opening; Biku enters the celebration"
+    },
+    {
+      "start": "00:20",
+      "end": "00:40",
+      "beat": "Biku notices a worried young girl"
+    },
+    {
+      "start": "00:40",
+      "end": "01:00",
+      "beat": "The girl explains that her little brother is missing"
+    },
+    {
+      "start": "01:00",
+      "end": "01:20",
+      "beat": "Biku calmly reassures her"
+    },
+    {
+      "start": "01:20",
+      "end": "01:40",
+      "beat": "Biku suggests going to the official help point"
+    },
+    {
+      "start": "01:40",
+      "end": "02:00",
+      "beat": "They reach the event volunteers safely"
+    },
+    {
+      "start": "02:00",
+      "end": "02:20",
+      "beat": "Volunteers record the details and start the lost-child procedure"
+    },
+    {
+      "start": "02:20",
+      "end": "02:40",
+      "beat": "A volunteer team checks the designated search area"
+    },
+    {
+      "start": "02:40",
+      "end": "03:00",
+      "beat": "The younger brother is found safe with an event helper"
+    },
+    {
+      "start": "03:00",
+      "end": "03:20",
+      "beat": "Volunteers coordinate the family reunion"
+    },
+    {
+      "start": "03:20",
+      "end": "03:40",
+      "beat": "Brother and sister reunite with their family"
+    },
+    {
+      "start": "03:40",
+      "end": "04:04",
+      "beat": "Biku's message about kindness, unity and Jai Jagannath"
+    }
+  ],
+  "closing_line_or": "ଆମେ ସମସ୍ତେ ଏକାଠି ହେଲେ କାହାକୁ ଏକା ରହିବାକୁ ପଡ଼େ ନାହିଁ।",
+  "safety": [
+    "Family-friendly",
+    "Respect Jagannath culture",
+    "No unsafe crowd behaviour",
+    "Biku alerts trained volunteers",
+    "Trained staff handle chariot or lost-child procedures"
+  ],
+  "publishing_status": "not_scheduled"
+}
