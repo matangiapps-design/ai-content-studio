@@ -1,0 +1,94 @@
+{
+  "project": "ODIA HERO",
+  "film_id": "odia-hero-002",
+  "title_en": "Biku and the Stuck Rath Wheel",
+  "title_or": "ବିକୁ ଓ ରଥର ଅଟକିଥିବା ଚକ",
+  "target_duration_seconds": 244,
+  "target_duration_timecode": "04:04",
+  "video_model_target": "Wan 3.0",
+  "model_integration_status": "not_connected",
+  "render_status": "not_rendered",
+  "delivery": {
+    "aspect_ratio": "16:9",
+    "target_width": 3840,
+    "target_height": 2160,
+    "fps": 24,
+    "upscale_after_generation": true
+  },
+  "character": {
+    "name": "Biku",
+    "description": "Small white stickman, round white head, expressive black eyes, thin black arms and legs, bright red cape; same design across shots."
+  },
+  "story": "During Puri Jagannath Rath Yatra, a chariot wheel stops. Biku sees people edging too close, calmly warns them to stay back, and alerts trained volunteers and the chariot team. The trained team inspects and resolves the issue while volunteers keep the area clear. The Rath moves again safely. Biku learns that courage means acting wisely and getting the right help.",
+  "scenes": [
+    {
+      "start": "00:00",
+      "end": "00:20",
+      "beat": "Establish the Rath Yatra procession and Biku's excitement"
+    },
+    {
+      "start": "00:20",
+      "end": "00:40",
+      "beat": "Biku watches the decorated Rath from a safe place"
+    },
+    {
+      "start": "00:40",
+      "end": "01:00",
+      "beat": "The chariot slows and its wheel stops"
+    },
+    {
+      "start": "01:00",
+      "end": "01:20",
+      "beat": "The crowd reacts; people begin edging too close"
+    },
+    {
+      "start": "01:20",
+      "end": "01:40",
+      "beat": "Biku recognises the risk and signals people to step back"
+    },
+    {
+      "start": "01:40",
+      "end": "02:00",
+      "beat": "Biku alerts event volunteers"
+    },
+    {
+      "start": "02:00",
+      "end": "02:20",
+      "beat": "Volunteers create a safe perimeter"
+    },
+    {
+      "start": "02:20",
+      "end": "02:40",
+      "beat": "Trained chariot team inspects the wheel"
+    },
+    {
+      "start": "02:40",
+      "end": "03:00",
+      "beat": "Team carefully resolves the issue"
+    },
+    {
+      "start": "03:00",
+      "end": "03:20",
+      "beat": "Volunteers confirm the area is clear"
+    },
+    {
+      "start": "03:20",
+      "end": "03:40",
+      "beat": "The Rath resumes moving slowly"
+    },
+    {
+      "start": "03:40",
+      "end": "04:04",
+      "beat": "Biku's lesson: courage is wise action; Jai Jagannath ending"
+    }
+  ],
+  "closing_line_or": "ସାହସ ମାନେ ବିପଦରେ ଝାପ ଦେବା ନୁହେଁ। ସଠିକ୍ ସମୟରେ ସଠିକ୍ ସାହାଯ୍ୟ ଡାକିବା ହିଁ ସତ୍ୟ ସାହସ।",
+  "safety": [
+    "Family-friendly",
+    "Respect Jagannath culture",
+    "No unsafe crowd behaviour",
+    "Biku alerts trained volunteers",
+    "Trained staff handle chariot or lost-child procedures"
+  ],
+  "publishing_status": "not_scheduled"
+}
