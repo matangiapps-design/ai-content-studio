@@ -21,8 +21,10 @@ static directory. Media download routes also reject database and JSON files.
 ## Compose
 
 1. Copy `.env.example` to `.env`. Set a long random `STUDIO_API_TOKEN` and the
-   actual `STUDIO_PUBLIC_ORIGIN` (for example `https://studio.example.com`). Generate
-   a token with `python -c 'import secrets; print(secrets.token_urlsafe(32))'`.
+   actual `STUDIO_PUBLIC_ORIGIN` (for example `https://studio.example.com`). Keep
+   `STUDIO_AUTH_DISABLED=false`. Set `CORS_ORIGINS` to the web origin plus
+   `https://appassets.androidplatform.net` for the Android app (comma-separated).
+   Generate a token with `python -c 'import secrets; print(secrets.token_urlsafe(32))'`.
 2. Create `data`, `workspace`, `outputs`, `assets`, `agent_workspace`, and
    `videofx_outputs`. The backend runs as UID/GID 1000; make these directories
    writable by that account. Keep `data/` private (`0700`).
@@ -47,7 +49,7 @@ jobs are stopped; use SQLite's backup API for a live database backup. Rotating
 Use Python 3.12, Node 22+, and FFmpeg. Install `requirements.lock` and run
 `npm ci` inside `web/`. Set `STUDIO_SECURE_COOKIES=false` for HTTP development,
 then start the backend on port 8008 and the frontend on port 3000. Next.js proxies
-`/api/` to `127.0.0.1:8008`. Set `CORS_ORIGINS=http://localhost:3000` when needed.
+`/api/` to `127.0.0.1:8008`. Set `CORS_ORIGINS=http://localhost:3000` for local web development. For the Android APK, add `https://appassets.androidplatform.net` to the comma-separated CORS allowlist.
 When `STUDIO_API_TOKEN` is unset, a private token is generated in
 `data/studio-token`; use it at `/login`. Authentication is never disabled.
 
