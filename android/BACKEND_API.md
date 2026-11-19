@@ -1,135 +1,60 @@
-# MATANGI AI Backend API Contract
+# MATANGI AI Android — Existing Backend Integration
 
-This document defines the HTTP API expected by the MATANGI AI Android app (version 1.1.0). The Android app is a client; model weights and provider credentials must remain on your backend/GPU workers.
+The Android app is a client for this repository's existing FastAPI backend. It does not create a second generation API.
 
-## 1. Deployment requirements
+## Backend address and security
 
-- Serve the API over HTTPS in production.
-- Expose a valid TLS certificate.
-- Configure CORS for the WebView origin `https://appassets.androidplatform.net`.
-- Allow methods `GET, POST, OPTIONS` and request headers `Accept, Content-Type`.
-- Return JSON with the `Content-Type: application/json` header.
-- Keep provider API keys and worker credentials on the server. Do not embed them in the APK.
+Use the public HTTPS origin that serves the existing Studio backend and frontend, for example `https://studio.example.com`.
 
-## 2. Health check
+Set these values on the backend:
 
-`GET /health`
+- `STUDIO_API_TOKEN`: a long random token.
+- `STUDIO_AUTH_DISABLED=false`: keep authentication enabled.
+- `CORS_ORIGINS`: include both the web Studio origin and the Android WebView origin:
+  `https://studio.example.com,https://appassets.androidplatform.net`.
 
-Example response:
+The Android app sends `Authorization: Bearer <STUDIO_API_TOKEN>` for protected requests. The token is held in app memory only; it is not written to local storage. Enter it again after restarting the app. Do not put provider keys (Gemini, WaveSpeed, Pixabay, YouTube) in the APK.
 
-```json
-{
-  "status": "ok",
-  "message": "MATANGI generation API is ready"
-}
-```
+## Endpoints used by the Android client
 
-The app marks the backend online only when this endpoint returns a successful HTTP status and valid JSON.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Public backend health check |
+| GET | `/api/config` | Verify API token and load masked engine configuration |
+| POST | `/api/config` | Save `IMAGE_ENGINE`, `WAVESPEED_IMAGE_MODEL`, `WAVESPEED_VIDEO_MODEL` |
+| POST | `/api/generate/quick` | Queue a full creator-pipeline video job |
+| GET | `/api/generate/status/{job_id}` | Read job progress, step, result or error |
+| POST | `/api/generate/cancel/{job_id}` | Request job cancellation |
+| GET | `/api/jobs` | Load persisted job history |
+| GET | `/api/generate/media?path={encoded_path}` | Fetch the completed media file |
 
-## 3. Submit a generation job
+## Generation payload
 
-`POST /api/v1/generations`
+The Android client posts the existing `GenerationRequest` schema to `/api/generate/quick`, including:
 
-Image example:
+- `topic`, `style`, `voice`, `aspect_ratio`, `bg_mode`
+- `content_style`, `start_point`, `script_length`
+- `image_count`, `video_count`
+- `bg_music`, `fact_check`, `auto_captions`, `omnichannel`
+- `generate_thumbnail`, `generate_seo`, `generate_timestamps`, `generate_snippets`
+- `audio_engine`, `video_engine`
 
-```json
-{
-  "type": "image",
-  "prompt": "Cinematic product photo of an electric supercar at night",
-  "engine": "qwen-image",
-  "settings": {
-    "aspect_ratio": "16:9"
-  }
-}
-```
+The API returns a `job_id`. The Android app polls `/api/generate/status/{job_id}` for `status`, `progress`, `step`, `result` and `error`. When complete, it fetches the `result` path through the protected media endpoint.
 
-Video example:
+## Engines that are actually wired in the current repository
 
-```json
-{
-  "type": "video",
-  "prompt": "An astronaut crosses a red desert at sunset",
-  "engine": "wan2.2",
-  "settings": {
-    "duration_seconds": 10,
-    "aspect_ratio": "16:9",
-    "mode": "text-to-video"
-  }
-}
-```
+- Image: `Gemini API` or `WaveSpeed AI`. This image stage is part of the full production pipeline; there is no standalone image-generation endpoint in the current API.
+- Video: `WaveSpeed AI` or `Vertex AI (Veo)`.
+- WaveSpeed model IDs are configurable in `WAVESPEED_IMAGE_MODEL` and `WAVESPEED_VIDEO_MODEL`.
 
-Supported engine identifiers exposed by the client:
+Wan 2.1/2.2, Helios, Qwen Image, SDXL and OmniRoute are not currently exposed by this backend's generation route. The Android interface marks these as future integrations rather than presenting them as working engines. LTX-based video generation can be configured through the WaveSpeed video model ID if the provider supports that model for your account.
 
-- Image: `auto`, `qwen-image`, `flux`, `sdxl`
-- Video: `auto`, `wan2.2`, `wan2.1`, `helios`, `ltx-video`
+## Production checklist
 
-The server must validate availability and return a clear error when a selected route is not installed or enabled. Do not silently claim a model ran when no worker accepted the job.
+1. Deploy the backend and web frontend behind one HTTPS reverse-proxy origin.
+2. Set `STUDIO_API_TOKEN`, `STUDIO_AUTH_DISABLED=false`, and both CORS origins.
+3. Configure real Gemini / WaveSpeed / Vertex credentials in the authenticated server Settings page.
+4. Enter the HTTPS origin and Studio token in the Android app, then use **Test connection**.
+5. Run a short generation test before using longer or higher-cost jobs.
 
-Successful submission should return HTTP 202 (or another 2xx status) and:
-
-```json
-{
-  "job_id": "job_123456",
-  "status": "queued"
-}
-```
-
-The client also accepts an optional `output_url` when a job completes immediately.
-
-## 4. Poll job status
-
-`GET /api/v1/generations/{job_id}`
-
-Example response while running:
-
-```json
-{
-  "job_id": "job_123456",
-  "status": "running"
-}
-```
-
-Example completed response:
-
-```json
-{
-  "job_id": "job_123456",
-  "status": "completed",
-  "output_url": "https://cdn.example.com/generated/job_123456.png"
-}
-```
-
-Example failed response:
-
-```json
-{
-  "job_id": "job_123456",
-  "status": "failed",
-  "error": "The selected model worker is unavailable"
-}
-```
-
-Use these status values: `queued`, `running`, `completed`, `failed`, `cancelled`. Output URLs must be absolute HTTP(S) URLs reachable by the device.
-
-## 5. Model routing guidance
-
-The app exposes engine selectors; it does not bundle or install any model. Configure workers separately and map each engine identifier to a real inference backend:
-
-| Engine | Suggested worker |
-|---|---|
-| `qwen-image` | ComfyUI workflow with Qwen Image |
-| `flux` | FLUX-compatible inference worker |
-| `sdxl` | SDXL-compatible inference worker |
-| `wan2.1` / `wan2.2` | Wan video inference worker |
-| `helios` | Helios video worker |
-| `ltx-video` | LTX-Video worker |
-| `auto` | Server-side router that selects only healthy, configured workers |
-
-The server should expose a capability/health monitor internally, enforce queue limits, validate input sizes, and report actionable errors. Add authentication/rate limits before public deployment; the current client does not embed a secret API key.
-
-## 6. Current limitations
-
-- Agent tiles are workflow placeholders; they do not execute autonomous agents yet.
-- Image/video generation requires this API and functioning model workers.
-- Job history is stored locally on the device. It is not synced across devices.
-- The app checks `/health`, submits generation jobs and polls job status. It does not provision GPU instances or install model weights.
+The backend is single-administrator: its provider configuration, job history and media are shared by all authorized users. Protect the API token and do not distribute it inside the APK.
