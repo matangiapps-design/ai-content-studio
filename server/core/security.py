@@ -29,7 +29,7 @@ def required_token():
     return token
 
 def is_auth_enabled():
-    disabled = os.getenv("STUDIO_AUTH_DISABLED", "true").lower() in ("true", "1", "yes")
+    disabled = os.getenv("STUDIO_AUTH_DISABLED", "false").lower() in ("true", "1", "yes")
     return not disabled
 
 def authenticated(connection):
