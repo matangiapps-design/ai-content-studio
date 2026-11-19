@@ -1,0 +1,129 @@
+{
+  "project": "ODIA HERO",
+  "film_id": "odia-hero-001",
+  "title_en": "Biku — The Little Hero of Rath Yatra",
+  "title_or": "ବିକୁ — ରଥଯାତ୍ରାର ଛୋଟ ବୀର",
+  "target_duration_seconds": 244,
+  "target_duration_timecode": "04:04",
+  "video_model_target": "Wan 3.0",
+  "model_integration_status": "not_connected",
+  "render_status": "not_rendered",
+  "delivery": {
+    "aspect_ratio": "16:9",
+    "target_width": 3840,
+    "target_height": 2160,
+    "fps": 24,
+    "upscale_after_generation": true
+  },
+  "character": {
+    "name": "Biku",
+    "description": "Small white stickman, round white head, expressive black eyes, thin black arms and legs, bright red cape; preserve identical design across shots."
+  },
+  "scenes": [
+    {
+      "start": "00:00",
+      "end": "00:20",
+      "beat": "Rath Yatra establishing shot"
+    },
+    {
+      "start": "00:20",
+      "end": "00:40",
+      "beat": "Biku introduction"
+    },
+    {
+      "start": "00:40",
+      "end": "01:00",
+      "beat": "Biku admires the Rath"
+    },
+    {
+      "start": "01:00",
+      "end": "01:20",
+      "beat": "Rain begins"
+    },
+    {
+      "start": "01:20",
+      "end": "01:40",
+      "beat": "Children become separated"
+    },
+    {
+      "start": "01:40",
+      "end": "02:00",
+      "beat": "Biku notices the children"
+    },
+    {
+      "start": "02:00",
+      "end": "02:20",
+      "beat": "Biku comforts the children"
+    },
+    {
+      "start": "02:20",
+      "end": "02:40",
+      "beat": "Biku alerts volunteers"
+    },
+    {
+      "start": "02:40",
+      "end": "03:00",
+      "beat": "Volunteers help at official point"
+    },
+    {
+      "start": "03:00",
+      "end": "03:20",
+      "beat": "Family is located"
+    },
+    {
+      "start": "03:20",
+      "end": "03:40",
+      "beat": "Family reunion"
+    },
+    {
+      "start": "03:40",
+      "end": "04:04",
+      "beat": "Moral and Jai Jagannath ending"
+    }
+  ],
+  "shorts": [
+    {
+      "title": "Biku notices the children",
+      "duration_seconds": 35,
+      "aspect_ratio": "9:16"
+    },
+    {
+      "title": "The rain and the rescue",
+      "duration_seconds": 35,
+      "aspect_ratio": "9:16"
+    },
+    {
+      "title": "The family reunion",
+      "duration_seconds": 40,
+      "aspect_ratio": "9:16"
+    },
+    {
+      "title": "What makes a hero?",
+      "duration_seconds": 30,
+      "aspect_ratio": "9:16"
+    }
+  ],
+  "audio": {
+    "narration_language": "Odia",
+    "subtitles": [
+      "Odia",
+      "English_optional"
+    ],
+    "music": "Original or licensed devotional instrumental"
+  },
+  "safety": [
+    "Family-friendly depiction",
+    "Biku alerts trained event volunteers",
+    "Children remain in a safe designated area",
+    "No unsafe crowd actions",
+    "Respect Jagannath culture"
+  ],
+  "publishing": {
+    "platforms": [
+      "YouTube",
+      "YouTube Shorts",
+      "Instagram Reels"
+    ],
+    "status": "not_scheduled"
+  }
+}
