@@ -137,6 +137,9 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.shell{max-width
 const URL_KEY='matangi_studio_url_v2', JOB_KEY='matangi_real_jobs_v2';
 let backendUrl='', apiToken='', backendReady=false, configCache={}, jobs=[], pollers=new Set(), mediaObjects={};
 const $=id=>document.getElementById(id);
+const el=id=>$(id);
+function apiHeaders(extra={}){return {...headers(false),...extra};}
+function escapeHtml(value){return esc(value)}
 function showView(id){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x.getAttribute('data-view')===id));window.scrollTo(0,0);if(id==='library')renderJobs('allJobs')}
 function setStatus(mode,label){$('connectionStatus').className='status '+mode;$('connectionText').textContent=label;$('homeConnectionTitle').textContent=mode==='online'?'Backend connected':mode==='checking'?'Checking backend':'Backend required';$('homeConnectionText').textContent=mode==='online'?'Connected to your deployed AI Content Studio API.':mode==='checking'?'Verifying health and API authentication.':'Set your deployed Studio HTTPS URL and API token in Settings, then test the connection.'}
 function base(u){return String(u||'').trim().replace(/\/+$/,'')}
