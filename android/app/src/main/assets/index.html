@@ -161,6 +161,43 @@ async function loadMedia(id,path){try{const response=await fetch(backendUrl+'/ap
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function jobCard(j){const id=String(j.id||j.job_id||'');const status=String(j.status||'queued').toLowerCase();const progress=Math.round(Math.max(0,Math.min(100,Number(j.progress||0)*100)));let actions='';if(['queued','running','processing'].includes(status))actions='<button class="btn danger" onclick="cancelJob(\''+esc(id)+'\')">Cancel</button>';if(status==='completed'&&j.result)actions+='<button class="btn secondary" onclick="loadMedia(\''+esc(id)+'\',\''+esc(j.result)+'\')">Load video preview</button>';const media='<div id="media-'+esc(id)+'"></div>';return '<div class="job"><div class="jobtop"><strong>'+esc(j.topic||'Production job')+'</strong><span class="jobstatus '+(status==='completed'?'completed':status==='failed'||status==='cancelled'?'failed':'')+'">'+esc(status)+'</span></div><div class="progress"><span style="width:'+progress+'%"></span></div><div class="small muted">'+esc(j.step||'')+' · '+progress+'%</div>'+(j.error?'<p class="small dangerText">'+esc(j.error)+'</p>':'')+'<div class="actions">'+actions+'</div>'+media+'</div>'}
 function renderJobs(target){const node=$(target);if(!node)return;node.innerHTML=jobs.length?jobs.slice(0,target==='recentJobs'?5:30).map(jobCard).join(''):'<div class="empty">No jobs yet. Start a production to see progress here.</div>'}
+
+let activeAgentJob=null, activeAgentPlan=null, agentPollTimer=null;
+async function runAgentWorkflow(){
+ const topic=el('agentTopic').value.trim(), status=el('agentStatus'), btn=el('agentRun');
+ if(!topic){status.classList.remove('hidden');status.textContent='Enter a topic or creative brief first.';return}
+ if(!backendReady){status.classList.remove('hidden');status.textContent='Connect the backend and test it in Settings first.';return}
+ btn.disabled=true;btn.textContent='Starting AI team…';status.classList.remove('hidden');status.textContent='Submitting to Strategy, Research, Creative Director and Quality agents…';el('agentPlan').classList.add('hidden');el('agentRender').classList.add('hidden');
+ try{
+  const res=await fetch(backendUrl+'/api/director/autonomous-plan',{method:'POST',headers:apiHeaders({'Content-Type':'application/json','Accept':'application/json'}),body:JSON.stringify({topic,duration_sec:Number(el('agentDuration').value),style:el('agentStyle').value,region:el('agentRegion').value.trim()||'Global',auto_approve:el('agentAuto').value==='true'})});
+  const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.detail||('HTTP '+res.status));activeAgentJob=data.job_id;status.textContent='AI workflow queued. Job ID: '+activeAgentJob+'. Checking progress…';pollAgentJob();
+ }catch(e){status.textContent='Could not start agents: '+e.message;btn.disabled=false;btn.textContent='Run AI team'}
+}
+async function pollAgentJob(){
+ if(!activeAgentJob)return;
+ try{
+  const res=await fetch(backendUrl+'/api/jobs',{headers:apiHeaders({'Accept':'application/json'}),cache:'no-store'});if(!res.ok)throw new Error('Job monitor HTTP '+res.status);
+  const rows=await res.json();const job=(Array.isArray(rows)?rows:[]).find(x=>x.id===activeAgentJob);
+  if(job){
+   el('agentStatus').textContent='Agent workflow: '+(job.step||job.status||'working')+' · '+Math.round((job.progress||0)*100)+'%';
+   if(job.status==='failed'){el('agentStatus').textContent='Agent workflow failed: '+(job.error||'Check backend logs');el('agentRun').disabled=false;el('agentRun').textContent='Run AI team';return}
+   if(job.result){let parsed;try{parsed=typeof job.result==='string'?JSON.parse(job.result):job.result}catch(e){parsed=null}
+    if(parsed&&parsed.scenes){activeAgentPlan=parsed;renderAgentPlanUI(parsed);el('agentStatus').textContent='Storyboard ready · QA '+(parsed.qa_score??'—')+'/100 · '+(parsed.qa_passed?'Passed':'Review required')+'. '+(parsed.status||'');el('agentRun').disabled=false;el('agentRun').textContent='Run AI team';if(parsed.status==='awaiting_approval')el('agentRender').classList.remove('hidden');if(parsed.status==='ready_for_render')el('agentStatus').textContent+=' Rendering was auto-approved; monitor the backend job.';return}
+   }
+  }
+ }catch(e){el('agentStatus').textContent='Status check: '+e.message}
+ agentPollTimer=setTimeout(pollAgentJob,5000);
+}
+function renderAgentPlanUI(p){
+ const box=el('agentPlan');box.classList.remove('hidden');let scenes=(p.scenes||[]).map(s=>'<div class="job"><strong>Scene '+escapeHtml(s.scene_number)+' · '+escapeHtml(s.duration_estimate_sec)+'s</strong><p class="small">'+escapeHtml(s.narration||'')+'</p><p class="small muted">'+escapeHtml(s.visual_description||'')+'</p></div>').join('');
+ box.innerHTML='<h3>'+escapeHtml(p.title||'Storyboard')+'</h3><p class="small"><b>Hook:</b> '+escapeHtml(p.hook||'')+'</p><p class="small muted">'+escapeHtml(p.research_summary||'')+'</p><p class="small">Quality score: '+escapeHtml(p.qa_score??'—')+'/100 · '+(p.qa_passed?'Passed':'Needs review')+'</p>'+scenes;
+}
+async function renderAgentPlan(){
+ if(!activeAgentJob||!backendReady)return;
+ const btn=el('agentRender').querySelector('button');btn.disabled=true;btn.textContent='Queueing render…';
+ try{const res=await fetch(backendUrl+'/api/director/render-plan',{method:'POST',headers:apiHeaders({'Content-Type':'application/json'}),body:JSON.stringify({job_id:activeAgentJob})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.detail||('HTTP '+res.status));el('agentStatus').textContent='Render queued for job '+data.job_id+'. Check Library/History on the web studio for the final MP4.';el('agentRender').classList.add('hidden')}catch(e){el('agentStatus').textContent='Render failed to queue: '+e.message;btn.disabled=false;btn.textContent='Approve & render full video'}
+}
+
 function init(){backendUrl=localStorage.getItem(URL_KEY)||'';$('apiBase').value=backendUrl;jobs=localJobs();renderJobs('recentJobs');renderJobs('allJobs');refreshStats();setStatus('','Not connected')}
 init();
 </script>
