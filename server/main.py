@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from server.routers import (
-    generation, publish, tools, brand, studio,
+    generation, publish, tools, brand, studio, retouch,
     campaigns, clipper, director, videofx,
     explainer, social, style, timeline
 )
@@ -117,6 +117,7 @@ app.include_router(director.router, prefix="/api/director", tags=["Director"])
 app.include_router(explainer.router, prefix="/api/explainer", tags=["Explainer"])
 app.include_router(brand.router, prefix="/api/brand", tags=["Brand"])
 app.include_router(tools.router, prefix="/api/tools", tags=["Tools"])
+app.include_router(retouch.router, prefix="/api/retouch", tags=["Video Retouch"])
 app.include_router(publish.router, prefix="/api/publish", tags=["Publish"])
 app.include_router(studio.router, prefix="/api/studio", tags=["Studio"])
 app.include_router(campaigns.router, prefix="/api/campaigns", tags=["Campaigns"])
