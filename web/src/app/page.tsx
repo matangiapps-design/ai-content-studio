@@ -15,10 +15,7 @@ import {
   Palette, 
   Bot,
   Zap,
-  CheckCircle2,
   Cpu,
-  Layers,
-  Wrench,
   Clapperboard,
   ArrowUpRight
 } from "lucide-react";
