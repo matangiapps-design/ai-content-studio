@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from server.routers import (
     generation, publish, tools, brand, studio, retouch,
-    campaigns, clipper, director, videofx,
+    campaigns, clipper, director, videofx, wan3,
     explainer, social, style, timeline
 )
 from server.core.scheduler import start_scheduler
@@ -113,6 +113,7 @@ def logout():
 app.include_router(generation.router, prefix="/api/generate", tags=["Generation"])
 app.include_router(clipper.router, prefix="/api/clipper", tags=["Clipper"])
 app.include_router(videofx.router, prefix="/api/videofx", tags=["VideoFX Flow"])
+app.include_router(wan3.router, prefix="/api/wan3", tags=["Wan 3.0 Video"])
 app.include_router(director.router, prefix="/api/director", tags=["Director"])
 app.include_router(explainer.router, prefix="/api/explainer", tags=["Explainer"])
 app.include_router(brand.router, prefix="/api/brand", tags=["Brand"])
