@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from server.routers import (
     generation, publish, tools, brand, studio, retouch,
     campaigns, clipper, director, videofx, wan3,
-    explainer, social, style, timeline
+    explainer, social, style, timeline, openshorts
 )
 from server.core.scheduler import start_scheduler
 from server.core.queue import stop_job
