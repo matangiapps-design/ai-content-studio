@@ -21,5 +21,6 @@ jobs:
           CLOUDX_GITHUB_TOKEN: ${{ secrets.CLOUDX_GITHUB_TOKEN }}
           CLOUDX_GITHUB_REPOS: ${{ vars.CLOUDX_GITHUB_REPOS }}
           CLOUDX_SERVICE_URLS: ${{ vars.CLOUDX_SERVICE_URLS }}
+          CLOUDX_ENABLE_SAFE_RERUN: ${{ vars.CLOUDX_ENABLE_SAFE_RERUN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: PYTHONPATH=cloudx-brain python -m cloudx.watch
