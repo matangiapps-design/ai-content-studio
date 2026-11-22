@@ -1,0 +1,26 @@
+name: CloudX Guardian Watch
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r cloudx-brain/requirements.txt
+      - name: Scan repositories and maintain alert issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLOUDX_GITHUB_TOKEN: ${{ secrets.CLOUDX_GITHUB_TOKEN }}
+          CLOUDX_GITHUB_REPOS: ${{ vars.CLOUDX_GITHUB_REPOS || 'matangiapps-design/keggelGPU,matangiapps-design/cloudphone,matangiapps-design/agentshield,matangiapps-design/ai-content-studio' }}
+          CLOUDX_SERVICE_URLS: ${{ vars.CLOUDX_SERVICE_URLS }}
+          CLOUDX_ENABLE_SAFE_RERUN: ${{ vars.CLOUDX_ENABLE_SAFE_RERUN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: PYTHONPATH=cloudx-brain python -m cloudx.watch
