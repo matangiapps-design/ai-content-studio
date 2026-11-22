@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, API_BASE_URL } from "@/lib/api";
 import { Film, Loader2, Link2, ShieldCheck, RefreshCw, Download, ExternalLink } from "lucide-react";
 
 type Clip = {
   title?: string;
   video_url?: string;
   download_url?: string;
+  matangi_download_path?: string;
   start?: number;
   end?: number;
 };
@@ -220,7 +221,7 @@ export default function OpenShortsPage() {
               {job.error && <p className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-300">{job.error}</p>}
               {!!job.clips?.length && <div className="space-y-3">
                 {job.clips.map((clip, index) => {
-                  const href = clip.download_url || clip.video_url;
+                  const href = clip.matangi_download_path ? API_BASE_URL + clip.matangi_download_path : (clip.download_url?.startsWith("https://") ? clip.download_url : (clip.video_url?.startsWith("https://") ? clip.video_url : undefined));
                   return (
                     <div key={`${index}-${href || ""}`} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/30 p-4">
                       <div>
