@@ -16,7 +16,6 @@ import {
   Film, 
   MonitorPlay, 
   Clapperboard,
-  Activity,
   Zap,
   Coffee,
   Heart
