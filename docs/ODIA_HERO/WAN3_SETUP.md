@@ -30,3 +30,24 @@ WaveSpeed's Wan 3.0 route supports up to 1080p. The final 3840×2160 export ther
 
 ## Limits
 This integration is not a live service until the user supplies a valid WaveSpeed API key in the local/server environment. This chat does not have access to that secret and will not ask the user to paste it here. Check provider pricing and billing before generating all scenes.
+
+
+## Complete film assembly
+
+The renderer now normalizes all scene clips to a consistent 1080p/24fps timeline, assembles the exact manifest duration, optionally mixes narration and licensed music, burns in SRT subtitles, and upscales the master to 3840×2160. The upscaled file is 4K output, not native 4K generation.
+
+An Odia narration draft and timed subtitle file are included:
+- `docs/ODIA_HERO/film-01-narration-or.md`
+- `docs/ODIA_HERO/film-01-subtitles-or.srt`
+
+After recording or generating the Odia narration audio and preparing original/licensed music, run:
+
+```bash
+python scripts/odia_hero_wan3_render.py docs/ODIA_HERO/film-01.json \
+  --resolution 1080p \
+  --voiceover assets/odia-hero-voiceover.mp3 \
+  --music assets/odia-hero-music.mp3 \
+  --subtitles docs/ODIA_HERO/film-01-subtitles-or.srt
+```
+
+For resumable submission, use `--submit-only` on the first run and `--resume` when continuing saved task IDs. FFmpeg must be installed and available on PATH. The renderer does not fabricate narration/music: without those inputs the video will be silent, and the console reports the missing tracks.
