@@ -9,6 +9,7 @@ BASE = "https://api.wavespeed.ai/api/v3"
 MODEL = "alibaba/wan-3.0/text-to-video"
 TERMINAL_FAILURES = {"failed", "cancelled", "timeout", "deleted"}
 
+
 class Wan3Client:
     def __init__(self, api_key: str | None = None, timeout_seconds: int = 1800):
         self.api_key = api_key or os.getenv("WAVESPEED_API_KEY")
@@ -17,6 +18,34 @@ class Wan3Client:
         self.timeout_seconds = timeout_seconds
         self.session = requests.Session()
         self.session.headers.update({"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"})
+
+    def list_models(self) -> list[dict]:
+        """Return the models visible to this API key; never guess model IDs.
+
+        WaveSpeed's account-scoped catalogue is queried server-side. The raw
+        response is normalized to model IDs and safe display metadata only.
+        """
+        response = self.session.get(f"{BASE}/models", timeout=30)
+        response.raise_for_status()
+        body = response.json()
+        data = body.get("data", body) if isinstance(body, dict) else body
+        if isinstance(data, dict):
+            data = data.get("models", data.get("items", []))
+        if not isinstance(data, list):
+            raise RuntimeError("WaveSpeed model catalogue returned an unexpected response shape.")
+        models = []
+        for item in data:
+            if isinstance(item, str):
+                model_id, name, task = item, item, None
+            elif isinstance(item, dict):
+                model_id = item.get("model_id") or item.get("id") or item.get("name")
+                name = item.get("name") or model_id
+                task = item.get("task") or item.get("type")
+            else:
+                continue
+            if isinstance(model_id, str) and model_id.strip():
+                models.append({"id": model_id.strip(), "name": str(name or model_id), "task": task})
+        return models
 
     def submit(self, prompt: str, duration: int = 20, aspect_ratio: str = "16:9",
                resolution: str = "720p", enable_audio: bool = False,
