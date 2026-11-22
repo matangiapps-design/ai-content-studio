@@ -60,6 +60,7 @@ def load_config(masked: bool = False):
         "WAVESPEED_AI_KEY": "",
         "WAVESPEED_IMAGE_MODEL": "black-forest-labs/flux-1.1-pro-ultra",
         "WAVESPEED_VIDEO_MODEL": "wavespeed-ai/ltx-2.3-text-to-video",
+        "WAN3_RESOLUTION": "720p",
         "WAVESPEED_AUDIO_MODEL": "elevenlabs/text-to-speech",
         "NEWS_API_KEY": "",
         "PIXABAY_API_KEY": "",
