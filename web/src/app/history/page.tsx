@@ -3,7 +3,7 @@
 import { apiFetch } from "@/lib/api";
 import { API_BASE_URL, getMediaUrl } from "@/lib/api";
 import { useEffect, useState } from "react";
-import { Film, Download, Trash2, Loader2, RefreshCw, Play, Clock, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
+import { Film, Download, Trash2, Loader2, RefreshCw, Play, Clock } from "lucide-react";
 
 interface ProjectVideo {
   title: string;
