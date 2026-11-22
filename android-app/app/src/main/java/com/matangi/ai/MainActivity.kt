@@ -1,6 +1,7 @@
 package com.matangi.ai
 
 import android.net.Uri
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -87,6 +88,13 @@ fun StudioScreen() {
     var renderState by remember { mutableStateOf("No render submitted") }
     var renderReady by remember { mutableStateOf(false) }
     var pendingDownloadId by remember { mutableStateOf("") }
+    var openShortsUrl by remember { mutableStateOf("") }
+    var openShortsRights by remember { mutableStateOf(false) }
+    var openShortsReachable by remember { mutableStateOf(false) }
+    var openShortsBusy by remember { mutableStateOf(false) }
+    var openShortsJobId by remember { mutableStateOf("") }
+    var openShortsState by remember { mutableStateOf("OpenShorts is not checked") }
+    var openShortsClips by remember { mutableStateOf(listOf<Pair<String, String>>()) }
     val scenes = remember(project) { project.optJSONArray("scenes") }
 
     val import = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -176,6 +184,105 @@ fun StudioScreen() {
                 if (!finished) mainHandler.post { renderBusy = false; renderState = "Still processing. Job ID: " + id + " — reconnect and check the server job later." }
             } catch (e: Exception) {
                 mainHandler.post { renderBusy = false; renderState = "Connection error: " + (e.message ?: "unknown error") }
+            }
+        }.start()
+    }
+
+    fun testOpenShortsConnection() {
+        if (apiBase.isBlank() || apiToken.isBlank()) {
+            openShortsState = "Enter the MATANGI backend HTTPS URL and Studio token first."
+            return
+        }
+        openShortsState = "Checking private OpenShorts service..."
+        val base = apiBase
+        val token = apiToken
+        Thread {
+            try {
+                val status = apiCall(base, token, "/api/openshorts/status")
+                val reachable = status.optBoolean("reachable", false)
+                mainHandler.post {
+                    openShortsReachable = reachable
+                    openShortsState = status.optString("message", if (reachable) "OpenShorts ready." else "OpenShorts is not ready.")
+                }
+            } catch (e: Exception) {
+                mainHandler.post {
+                    openShortsReachable = false
+                    openShortsState = "Connection check failed: " + (e.message ?: "unknown error")
+                }
+            }
+        }.start()
+    }
+
+    fun generateOpenShorts() {
+        if (openShortsBusy) return
+        if (!openShortsReachable) {
+            openShortsState = "Test the OpenShorts connection first."
+            return
+        }
+        if (!openShortsRights) {
+            openShortsState = "Confirm that you own this video or have permission to process it."
+            return
+        }
+        if (!openShortsUrl.trim().startsWith("https://")) {
+            openShortsState = "Enter a public HTTPS video URL."
+            return
+        }
+        openShortsBusy = true
+        openShortsClips = emptyList()
+        openShortsJobId = ""
+        openShortsState = "Submitting clipping job..."
+        val base = apiBase
+        val token = apiToken
+        val request = JSONObject().apply {
+            put("url", openShortsUrl.trim())
+            put("acknowledged", true)
+            put("output_format", "vertical")
+            put("clip_min_seconds", 15)
+            put("clip_max_seconds", 60)
+        }
+        Thread {
+            try {
+                val submitted = apiCall(base, token, "/api/openshorts/generate", "POST", request)
+                val id = submitted.getString("job_id")
+                mainHandler.post { openShortsJobId = id; openShortsState = "Queued • " + id }
+                var finished = false
+                var attempts = 0
+                while (!finished && attempts < 240) {
+                    Thread.sleep(30000)
+                    attempts++
+                    val job = apiCall(base, token, "/api/openshorts/jobs/" + id)
+                    val state = job.optString("status", "unknown")
+                    val array = job.optJSONArray("clips")
+                    val clips = mutableListOf<Pair<String, String>>()
+                    if (array != null) {
+                        for (index in 0 until array.length()) {
+                            val item = array.optJSONObject(index) ?: continue
+                            val title = item.optString("title", "Clip " + (index + 1))
+                            val link = item.optString("download_url").ifBlank { item.optString("video_url") }
+                            if (link.startsWith("https://")) clips.add(title to link)
+                        }
+                    }
+                    val logs = job.optJSONArray("logs")
+                    val lastLog = if (logs != null && logs.length() > 0) logs.optString(logs.length() - 1) else state
+                    mainHandler.post { openShortsState = state.uppercase() + " • " + lastLog; openShortsClips = clips }
+                    when (state) {
+                        "completed" -> {
+                            finished = true
+                            mainHandler.post { openShortsBusy = false; openShortsState = "Clips ready. Open a link below to download." }
+                        }
+                        "failed" -> {
+                            finished = true
+                            val error = job.optString("error", "OpenShorts processing failed.")
+                            mainHandler.post { openShortsBusy = false; openShortsState = "Failed: " + error }
+                        }
+                    }
+                }
+                if (!finished) mainHandler.post {
+                    openShortsBusy = false
+                    openShortsState = "Still processing. Job ID: " + id + ". Reopen the app and check the job on the web studio."
+                }
+            } catch (e: Exception) {
+                mainHandler.post { openShortsBusy = false; openShortsState = "OpenShorts error: " + (e.message ?: "unknown error") }
             }
         }.start()
     }
@@ -278,6 +385,44 @@ fun StudioScreen() {
                         Text("Save MP4 to phone")
                     }
                 }
+            }
+        }
+        Spacer(Modifier.height(14.dp))
+        Card(colors = CardDefaults.cardColors(containerColor = panel), shape = RoundedCornerShape(14.dp)) {
+            Column(Modifier.padding(14.dp)) {
+                Text("OPENSHORTS AI CLIPPER", color = copper, fontSize = 11.sp, letterSpacing = 2.sp)
+                Text("Create vertical Shorts and Reels from a public video URL using your private self-hosted OpenShorts service.", color = muted, fontSize = 10.sp)
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(value = openShortsUrl, onValueChange = { openShortsUrl = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Public HTTPS video URL") }, placeholder = { Text("https://www.youtube.com/watch?v=...") }, singleLine = true, enabled = !openShortsBusy)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("I own this video or have permission to process it.", color = Color.White, fontSize = 11.sp, modifier = Modifier.weight(1f))
+                    Checkbox(checked = openShortsRights, onCheckedChange = { openShortsRights = it }, enabled = !openShortsBusy)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = { testOpenShortsConnection() }, enabled = !openShortsBusy) { Text("Test connection") }
+                    Button(onClick = { generateOpenShorts() }, enabled = !openShortsBusy && openShortsReachable) {
+                        if (openShortsBusy) CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        else Icon(Icons.Default.Movie, contentDescription = null)
+                        Spacer(Modifier.width(6.dp))
+                        Text(if (openShortsBusy) "Processing..." else "Create Shorts")
+                    }
+                }
+                Text(openShortsState, color = if (openShortsReachable) copper else muted, fontSize = 11.sp)
+                if (openShortsJobId.isNotBlank()) Text("JOB ID  $openShortsJobId", color = muted, fontSize = 10.sp)
+                openShortsClips.forEachIndexed { index, clip ->
+                    OutlinedButton(onClick = {
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(clip.second)))
+                        } catch (_: Exception) {
+                            openShortsState = "Unable to open clip link on this device."
+                        }
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Default.Download, contentDescription = null)
+                        Spacer(Modifier.width(6.dp))
+                        Text("Open clip " + (index + 1) + ": " + clip.first.take(42))
+                    }
+                }
+                Text("Self-hosted processing only by default. Hosted OpenShorts and social publishing are not enabled here.", color = muted, fontSize = 9.sp)
             }
         }
         Spacer(Modifier.height(12.dp))
