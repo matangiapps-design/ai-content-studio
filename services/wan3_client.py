@@ -7,6 +7,7 @@ import os, time, requests
 
 BASE = "https://api.wavespeed.ai/api/v3"
 MODEL = "alibaba/wan-3.0/text-to-video"
+IMAGE_MODEL = "alibaba/wan-3.0/image-to-video"
 TERMINAL_FAILURES = {"failed", "cancelled", "timeout", "deleted"}
 
 
@@ -70,6 +71,43 @@ class Wan3Client:
         task_id = task.get("id")
         if not task_id:
             raise RuntimeError(f"Wan submission did not return a prediction id: {body}")
+        return str(task_id)
+
+    def submit_image_to_video(self, image_path: str, prompt: str, duration: int = 5,
+                             aspect_ratio: str = "9:16", resolution: str = "720p",
+                             generate_audio: bool = False, seed: int | None = None) -> str:
+        """Submit a local image as a base64 first frame to Wan 3.0 Image-to-Video."""
+        import base64
+        from pathlib import Path
+        path = Path(image_path)
+        if not path.is_file():
+            raise FileNotFoundError(f"Reference image not found: {path}")
+        suffix = path.suffix.lower()
+        mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(suffix)
+        if not mime:
+            raise ValueError("Reference image must be JPG or PNG.")
+        if not 2 <= int(duration) <= 30:
+            raise ValueError("Wan 3.0 image-to-video duration must be between 2 and 30 seconds.")
+        if aspect_ratio not in {"16:9", "9:16", "1:1", "4:3", "3:4"}:
+            raise ValueError("Unsupported aspect ratio.")
+        if resolution not in {"480p", "720p", "1080p"}:
+            raise ValueError("Resolution must be 480p, 720p or 1080p.")
+        encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+        payload = {
+            "image": f"data:{mime};base64,{encoded}", "prompt": prompt,
+            "duration": int(duration), "aspect_ratio": aspect_ratio,
+            "resolution": resolution, "generate_audio": bool(generate_audio),
+            "enable_prompt_expansion": False,
+        }
+        if seed is not None:
+            payload["seed"] = int(seed)
+        response = self.session.post(f"{BASE}/{IMAGE_MODEL}", json=payload, timeout=120)
+        response.raise_for_status()
+        body = response.json()
+        task = body.get("data", body)
+        task_id = task.get("id")
+        if not task_id:
+            raise RuntimeError(f"Wan image-to-video submission did not return a prediction id: {body}")
         return str(task_id)
 
     def wait(self, task_id: str, poll_seconds: int = 3) -> str:
