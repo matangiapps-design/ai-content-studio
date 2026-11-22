@@ -1,0 +1,21 @@
+# Run this as an additional compose file with the upstream OpenShorts compose:
+# docker compose -p openshorts -f openshorts/docker-compose.yml -f ops/openshorts-network.override.yml up --build -d backend renderer
+#
+# Requires MATANGI's docker-compose.yml to have created the external matangi_shared network.
+# Keep the upstream API and renderer ports off the host; MATANGI reaches them over this private network.
+services:
+  backend:
+    ports: !reset []
+    networks:
+      - default
+      - matangi_shared
+  renderer:
+    ports: !reset []
+    networks:
+      - default
+      - matangi_shared
+
+networks:
+  matangi_shared:
+    external: true
+    name: matangi_shared
