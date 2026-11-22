@@ -1,6 +1,6 @@
 # ODIA HERO Wan 3.0 integration
 
-## Setup
+## Studio video-engine integration\nSelect `WaveSpeed AI (Wan 3.0)` under Platform Settings → Active Engine Selection. Choose 480p, 720p, or 1080p. The existing WaveSpeed model-ID and Vertex AI (Veo) choices remain available. The video settings are stored in the server configuration.\n\n## Setup
 1. Create a WaveSpeedAI account and generate an API key.
 2. Put `WAVESPEED_API_KEY=...` in the server-side `.env` file. Do not commit the key or expose it in frontend code.
 3. Install the existing project requirements (`requests` is already included).
