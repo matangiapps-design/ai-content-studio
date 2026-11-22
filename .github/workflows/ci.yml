@@ -12,7 +12,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg libgl1
       - run: pip install -r requirements.lock
       - run: pip check
-      - run: pytest tests/ -q
+      - run: python -m pytest tests/ -q
   frontend:
     runs-on: ubuntu-latest
     defaults:
