@@ -80,7 +80,7 @@ export default function ClipperPage() {
           
           if (state.result) {
             try {
-              const res: { type: "selection"; clips: TimelineClipData[]; video_path: string } | { type: "finished"; clips: GeneratedClip[]; failed?: any[] } = JSON.parse(state.result);
+              const res: { type: "selection"; clips: TimelineClipData[]; video_path: string } | { type: "finished"; clips: GeneratedClip[]; failed?: { title: string; error: string }[] } = JSON.parse(state.result);
               if (res.type === "selection") {
                 setStatus("selection");
                 setAnalyzedClips(res.clips);
