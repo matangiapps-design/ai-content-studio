@@ -37,7 +37,7 @@ Submit a generation:
 POST /higgsfield/requests
 Content-Type: application/json
 
-{"model_path":"higgsfield-ai/soul/v2/standard","input":{"prompt":"A cinematic mountain landscape"}}
+{"model_path":"higgsfield-ai/soul/v2/standard","input":{"prompt":"A cinematic mountain landscape"},"confirm_paid_generation":true}
 ```
 Check the returned request ID:
 ```http
