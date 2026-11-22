@@ -37,7 +37,8 @@ export function Sidebar() {
     {
       group: "AI Production",
       items: [
-        { name: "OpenShorts AI", href: "/openshorts", icon: Clapperboard },\n        { name: "Magic Clipper", href: "/clipper", icon: Scissors },
+        { name: "OpenShorts AI", href: "/openshorts", icon: Clapperboard },
+        { name: "Magic Clipper", href: "/clipper", icon: Scissors },
         { name: "Movie Explainer", href: "/explainer", icon: Clapperboard },
         { name: "Auto-Pilot Bots", href: "/campaigns", icon: Bot },
         { name: "Brand & Styles", href: "/brand", icon: Layers },
