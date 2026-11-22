@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: matangi-ai-render-api
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    disk:
+      name: matangi-ai-data
+      mountPath: /var/data
+      sizeGB: 10
+    dockerCommand: >-
+      sh -c "mkdir -p /var/data/data /var/data/workspace /var/data/outputs /var/data/agent_workspace /var/data/assets /var/data/videofx_outputs &&
+      ln -sfn /var/data/data /app/data &&
+      ln -sfn /var/data/workspace /app/workspace &&
+      ln -sfn /var/data/outputs /app/outputs &&
+      ln -sfn /var/data/agent_workspace /app/agent_workspace &&
+      ln -sfn /var/data/assets /app/assets &&
+      ln -sfn /var/data/videofx_outputs /app/videofx_outputs &&
+      exec uvicorn server.main:app --host 0.0.0.0 --port 8008 --workers 1 --no-proxy-headers"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: STUDIO_DATA_DIR
+        value: /var/data/data
+      - key: STUDIO_CONFIG_FILE
+        value: /var/data/data/config.json
+      - key: STUDIO_API_TOKEN
+        generateValue: true
+      - key: STUDIO_SECURE_COOKIES
+        value: "true"
+      - key: CORS_ORIGINS
+        value: https://odianxt.com,https://www.odianxt.com
+      - key: WAVESPEED_API_KEY
+        sync: false
