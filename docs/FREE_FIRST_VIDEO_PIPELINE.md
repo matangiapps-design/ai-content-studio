@@ -16,7 +16,7 @@ Upstream: https://github.com/mutonby/openshorts
 
 - `OPENSHORTS_API_URL` is empty by default, so the integration stays disabled until a self-hosted service is configured.
 - Public/hosted OpenShorts URLs are blocked by default. Do not set `OPENSHORTS_ALLOW_HOSTED=true` unless hosted quota/billing use is deliberately intended.
-- Self-hosted OpenShorts uses no API key. `OPENSHORTS_API_KEY` is optional for a private instance that requires one.
+- Self-hosted OpenShorts uses no OpenShorts API key. Its AI moment-selection stage still needs either a Gemini key or an OpenAI-compatible local LLM. MATANGI can forward `OPENSHORTS_GEMINI_API_KEY` as `X-Gemini-Key`; alternatively configure `LLM_BASE_URL` and `LLM_MODEL` in the OpenShorts service environment. `OPENSHORTS_API_KEY` is optional for a private instance that has an additional auth proxy.
 - No automatic low-quality retry occurs. If OpenShorts returns `needs_confirmation`, MATANGI returns a quality warning without submitting a forced low-quality job.
 - Processing requires a positive rights acknowledgement. Only submit videos you own or have permission to process.
 - Social publishing is intentionally not exposed in this adapter.
@@ -39,7 +39,7 @@ OpenShorts' core repository is MIT-licensed. Its self-hosted stack uses Docker C
    OPENSHORTS_API_KEY=
    OPENSHORTS_ALLOW_HOSTED=false
    ```
-   Replace the URL with the private address reachable from the MATANGI backend. A Docker container's `127.0.0.1` is the container itself, not the host or another container.
+   Replace the URL with the private address reachable from the MATANGI backend. The MATANGI Docker Compose configuration now reads these variables from `.env` and keeps hosted mode disabled. A Docker container's `127.0.0.1` is the container itself, not the host or another container. If you use Gemini, keep the key only in MATANGI's local `.env`; the adapter forwards it to the private OpenShorts API in the `X-Gemini-Key` header. If you use a local LLM, configure `LLM_BASE_URL` and `LLM_MODEL` in the OpenShorts service `.env` instead and leave `OPENSHORTS_GEMINI_API_KEY` blank.
 5. Open MATANGI's **OpenShorts AI** page or Android app section and run **Test connection**. It should report the OpenShorts API as ready before any clipping job is submitted.
 
 ### Local model option
