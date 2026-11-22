@@ -149,8 +149,15 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <label className="block text-[11px] font-bold text-zinc-300 uppercase tracking-wider">Video Engine</label>
-              <TabSelect options={["WaveSpeed AI", "Vertex AI (Veo)"]} value={config.VIDEO_ENGINE || "WaveSpeed AI"} onChange={v => updateConfig("VIDEO_ENGINE", v)} />
+              <TabSelect options={["WaveSpeed AI", "WaveSpeed AI (Wan 3.0)", "Vertex AI (Veo)"]} value={config.VIDEO_ENGINE || "WaveSpeed AI"} onChange={v => updateConfig("VIDEO_ENGINE", v)} />
             </div>
+            {config.VIDEO_ENGINE === "WaveSpeed AI (Wan 3.0)" && (
+              <div className="space-y-2 md:col-span-2">
+                <label className="block text-[11px] font-bold text-zinc-300 uppercase tracking-wider">Wan 3.0 Output Resolution</label>
+                <TabSelect options={["480p", "720p", "1080p"]} value={config.WAN3_RESOLUTION || "720p"} onChange={v => updateConfig("WAN3_RESOLUTION", v)} />
+                <p className="text-[10px] text-zinc-500">Wan 3.0 generates clips up to 30 seconds. Provider usage may incur charges.</p>
+              </div>
+            )}
           </div>
           
           {/* Custom Models Sub-card */}

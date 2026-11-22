@@ -1,0 +1,48 @@
+name: Blue Couture Free Video Render
+
+on:
+  workflow_dispatch:
+    inputs:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Verify reference images
+        run: |
+          test -f assets/blue_couture/reference-01-model-walking-blue-gown.jpg
+          test -f assets/blue_couture/reference-02-model-seated-blue-look.jpg
+      - name: Render free motion-photo MP4
+        env:
+          DURATION: "10"
+          SIZE: "1080x1920"
+        run: |
+          mkdir -p output
+          WIDTH=${SIZE%x*}
+          HEIGHT=${SIZE#*x}
+          HALF=$(awk "BEGIN {print ${DURATION}/2}")
+          FPS=24
+          FRAMES=$(awk "BEGIN {print int(${HALF}*${FPS})}")
+          ffmpeg -hide_banner -y \
+            -loop 1 -framerate ${FPS} -i assets/blue_couture/reference-01-model-walking-blue-gown.jpg \
+            -loop 1 -framerate ${FPS} -i assets/blue_couture/reference-02-model-seated-blue-look.jpg \
+            -filter_complex "[0:v]scale=${WIDTH}:${HEIGHT}:force_original_aspect_ratio=increase,crop=${WIDTH}:${HEIGHT},zoompan=z='min(zoom+0.0007,1.07)':d=${FRAMES}:s=${WIDTH}x${HEIGHT}:fps=${FPS},setsar=1,format=yuv420p[v0];[1:v]scale=${WIDTH}:${HEIGHT}:force_original_aspect_ratio=increase,crop=${WIDTH}:${HEIGHT},zoompan=z='min(zoom+0.0007,1.07)':d=${FRAMES}:s=${WIDTH}x${HEIGHT}:fps=${FPS},setsar=1,format=yuv420p[v1];[v0][v1]xfade=transition=fade:duration=0.6:offset=$(awk "BEGIN {print ${HALF}-0.6}") [v]" \
+            -map "[v]" -t ${DURATION} -r ${FPS} -c:v libx264 -preset veryfast -crf 20 \
+            -movflags +faststart output/blue-couture-free.mp4
+      - name: Upload MP4
+        uses: actions/upload-artifact@v4
+        with:
+          name: blue-couture-free-video
+          path: output/blue-couture-free.mp4
+          if-no-files-found: error
+          retention-days: 7

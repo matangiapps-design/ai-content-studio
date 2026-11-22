@@ -68,6 +68,7 @@ export interface StudioConfig {
   WAVESPEED_IMAGE_MODEL?: string;
   WAVESPEED_TEXT_MODEL?: string;
   WAVESPEED_VIDEO_MODEL?: string;
+  WAN3_RESOLUTION?: string;
   YOUTUBE_CLIENT_ID?: string;
   YOUTUBE_CLIENT_SECRET?: string;
 }
