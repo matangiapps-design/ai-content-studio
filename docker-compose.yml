@@ -13,7 +13,11 @@ services:
       STUDIO_SECURE_COOKIES: ${STUDIO_SECURE_COOKIES:-true}
       CORS_ORIGINS: ${STUDIO_PUBLIC_ORIGIN:?Set STUDIO_PUBLIC_ORIGIN in .env}
       YOUTUBE_REDIRECT_URI: ${STUDIO_PUBLIC_ORIGIN}/api/social/youtube/callback
-      STUDIO_CONFIG_FILE: /app/data/config.json\n      OPENSHORTS_API_URL: ${OPENSHORTS_API_URL:-}\n      OPENSHORTS_API_KEY: ${OPENSHORTS_API_KEY:-}\n      OPENSHORTS_ALLOW_HOSTED: ${OPENSHORTS_ALLOW_HOSTED:-false}
+      STUDIO_CONFIG_FILE: /app/data/config.json
+      OPENSHORTS_API_URL: ${OPENSHORTS_API_URL:-}
+      OPENSHORTS_API_KEY: ${OPENSHORTS_API_KEY:-}
+      OPENSHORTS_GEMINI_API_KEY: ${OPENSHORTS_GEMINI_API_KEY:-}
+      OPENSHORTS_ALLOW_HOSTED: ${OPENSHORTS_ALLOW_HOSTED:-false}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8008/health', timeout=5)"]
       interval: 30s
