@@ -17,8 +17,8 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = Color.rgb(9, 10, 18)
-        window.navigationBarColor = Color.rgb(9, 10, 18)
+        window.statusBarColor = Color.rgb(23, 35, 27)
+        window.navigationBarColor = Color.rgb(23, 35, 27)
 
         webView = WebView(this)
         webView.settings.apply {
@@ -45,7 +45,7 @@ class MainActivity : Activity() {
             }
         }
         webView.webChromeClient = WebChromeClient()
-        webView.setBackgroundColor(Color.rgb(9, 10, 18))
+        webView.setBackgroundColor(Color.rgb(23, 35, 27))
         setContentView(
             webView,
             ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
