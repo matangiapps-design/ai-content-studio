@@ -77,9 +77,10 @@ export default function VideoFXPage() {
         setStatus("error");
         setLogs(prev => [...prev, `Error: ${data.detail || "Failed to start job"}`]);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setStatus("error");
-      setLogs(prev => [...prev, `Request failed: ${e.message}`]);
+      const message = e instanceof Error ? e.message : String(e);
+      setLogs(prev => [...prev, `Request failed: ${message}`]);
     }
   };
 
