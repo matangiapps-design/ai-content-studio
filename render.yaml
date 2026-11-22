@@ -13,6 +13,7 @@ services:
       sizeGB: 10
     dockerCommand: >-
       sh -c "mkdir -p /var/data/data /var/data/workspace /var/data/outputs /var/data/agent_workspace /var/data/assets /var/data/videofx_outputs &&
+      rm -rf /app/data /app/workspace /app/outputs /app/agent_workspace /app/assets /app/videofx_outputs &&
       ln -sfn /var/data/data /app/data &&
       ln -sfn /var/data/workspace /app/workspace &&
       ln -sfn /var/data/outputs /app/outputs &&
