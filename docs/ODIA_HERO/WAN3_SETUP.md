@@ -4,6 +4,12 @@
 
 Select `WaveSpeed AI (Wan 3.0)` under Platform Settings → Active Engine Selection. Choose 480p, 720p, or 1080p. The existing WaveSpeed model-ID and Vertex AI (Veo) choices remain available. The video settings are stored in the server configuration.
 
+## WaveSpeed model discovery
+
+The server-side `Wan3Client.list_models()` helper queries WaveSpeed's authenticated `GET /api/v3/models` catalogue using the server-held `WAVESPEED_API_KEY`. It returns normalized model IDs and display metadata; it does not invent aliases or assume that a model is enabled for the account. Use the exact returned ID and the provider's model-specific schema before adding a new generation route. Keep this call on the server—never send the API key to the browser or log authorization headers.
+
+A Wan 3.6 entry is only usable if the account catalogue actually returns its model ID and its model-specific API schema has been verified. The discovery helper does not silently switch the production Wan 3.0 route to an unverified model.
+
 ## Setup
 1. Create a WaveSpeedAI account and generate an API key.
 2. Put `WAVESPEED_API_KEY=...` in the server-side `.env` file. Do not commit the key or expose it in frontend code.
