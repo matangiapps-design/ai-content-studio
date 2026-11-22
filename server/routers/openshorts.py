@@ -9,10 +9,11 @@ import ipaddress
 import os
 import re
 from typing import Any, Optional
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import httpx
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, HttpUrl, model_validator
 
 router = APIRouter()
@@ -169,21 +170,84 @@ async def generate_openshorts(req: OpenShortsGenerateRequest):
     return {"engine": "OpenShorts", "job_id": str(data["job_id"]), "status": data.get("status", "queued")}
 
 
-@router.get("/jobs/{job_id}")
-async def openshorts_job(job_id: str):
+async def _get_job(job_id: str) -> dict[str, Any]:
     if not _JOB_ID_RE.fullmatch(job_id or ""):
         raise HTTPException(status_code=400, detail="Invalid job_id.")
     status_code, data = await _request("GET", f"/api/status/{job_id}")
     _raise_upstream(status_code, data)
     if not isinstance(data, dict):
         raise HTTPException(status_code=502, detail="OpenShorts returned an invalid job response.")
+    return data
+
+
+@router.get("/jobs/{job_id}")
+async def openshorts_job(job_id: str):
+    data = await _get_job(job_id)
     result = data.get("result")
     clips = result.get("clips", []) if isinstance(result, dict) else []
+    safe_clips = []
+    for index, clip in enumerate(clips if isinstance(clips, list) else []):
+        if not isinstance(clip, dict):
+            continue
+        item = dict(clip)
+        item["matangi_download_path"] = f"/api/openshorts/jobs/{job_id}/clips/{index}/download"
+        safe_clips.append(item)
     return {
         "engine": "OpenShorts",
         "job_id": job_id,
         "status": data.get("status", "unknown"),
         "logs": data.get("logs", []),
-        "clips": clips if isinstance(clips, list) else [],
+        "clips": safe_clips,
         "error": data.get("error") or data.get("failure"),
     }
+
+
+@router.get("/jobs/{job_id}/clips/{clip_index}/download")
+async def openshorts_clip_download(job_id: str, clip_index: int):
+    data = await _get_job(job_id)
+    result = data.get("result")
+    clips = result.get("clips", []) if isinstance(result, dict) else []
+    if not isinstance(clips, list) or clip_index < 0 or clip_index >= len(clips):
+        raise HTTPException(status_code=404, detail="Clip not found.")
+    clip = clips[clip_index]
+    if not isinstance(clip, dict):
+        raise HTTPException(status_code=404, detail="Clip not found.")
+
+    base, _, config_error = _service_config()
+    if config_error or not base:
+        raise HTTPException(status_code=503, detail=config_error or "OpenShorts is not configured.")
+    raw_url = clip.get("video_url") or clip.get("download_url")
+    if not isinstance(raw_url, str) or not raw_url:
+        raise HTTPException(status_code=404, detail="OpenShorts did not provide a clip download URL.")
+    target = urljoin(base + "/", raw_url)
+    base_parts, target_parts = urlsplit(base), urlsplit(target)
+    if (target_parts.scheme, target_parts.netloc) != (base_parts.scheme, base_parts.netloc):
+        raise HTTPException(status_code=502, detail="OpenShorts returned a clip URL outside its configured service origin.")
+
+    client = httpx.AsyncClient(timeout=httpx.Timeout(120.0, connect=8.0), follow_redirects=False)
+    try:
+        request = client.build_request("GET", target, headers=_headers())
+        upstream = await client.send(request, stream=True)
+    except httpx.HTTPError as exc:
+        await client.aclose()
+        raise HTTPException(status_code=502, detail=f"Clip download failed: {type(exc).__name__}") from exc
+    if not upstream.is_success:
+        status = upstream.status_code
+        await upstream.aclose()
+        await client.aclose()
+        raise HTTPException(status_code=502, detail=f"OpenShorts clip download returned HTTP {status}.")
+
+    async def stream():
+        try:
+            async for chunk in upstream.aiter_bytes(256 * 1024):
+                yield chunk
+        finally:
+            await upstream.aclose()
+            await client.aclose()
+
+    filename = f"MATANGI-OpenShorts-{job_id}-{clip_index + 1}.mp4"
+    return StreamingResponse(
+        stream(),
+        media_type=upstream.headers.get("content-type", "video/mp4"),
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
