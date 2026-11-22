@@ -18,6 +18,9 @@ services:
       OPENSHORTS_API_KEY: ${OPENSHORTS_API_KEY:-}
       OPENSHORTS_GEMINI_API_KEY: ${OPENSHORTS_GEMINI_API_KEY:-}
       OPENSHORTS_ALLOW_HOSTED: ${OPENSHORTS_ALLOW_HOSTED:-false}
+    networks:
+      - default
+      - matangi_shared
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8008/health', timeout=5)"]
       interval: 30s
@@ -42,3 +45,7 @@ services:
       frontend:
         condition: service_started
     restart: unless-stopped
+
+networks:
+  matangi_shared:
+    name: matangi_shared
