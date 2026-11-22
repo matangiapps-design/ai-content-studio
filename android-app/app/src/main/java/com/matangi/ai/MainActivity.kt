@@ -1,7 +1,6 @@
 package com.matangi.ai
 
 import android.net.Uri
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -93,6 +92,7 @@ fun StudioScreen() {
     var openShortsReachable by remember { mutableStateOf(false) }
     var openShortsBusy by remember { mutableStateOf(false) }
     var openShortsJobId by remember { mutableStateOf("") }
+    var pendingOpenClipPath by remember { mutableStateOf("") }
     var openShortsState by remember { mutableStateOf("OpenShorts is not checked") }
     var openShortsClips by remember { mutableStateOf(listOf<Pair<String, String>>()) }
     val scenes = remember(project) { project.optJSONArray("scenes") }
@@ -121,6 +121,36 @@ fun StudioScreen() {
                     mainHandler.post { renderState = "MP4 saved to your selected folder." }
                 } catch (e: Exception) {
                     mainHandler.post { renderState = "Download error: " + (e.message ?: "unknown error") }
+                }
+            }.start()
+        }
+    }
+
+    val saveOpenClip = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("video/mp4")) { uri: Uri? ->
+        if (uri != null && pendingOpenClipPath.startsWith("/api/openshorts/jobs/")) {
+            val base = apiBase
+            val token = apiToken
+            val path = pendingOpenClipPath
+            Thread {
+                try {
+                    require(base.startsWith("https://")) { "Backend must use HTTPS." }
+                    val conn = URL(base.trimEnd('/') + path).openConnection() as HttpURLConnection
+                    conn.requestMethod = "GET"
+                    conn.setRequestProperty("Authorization", "Bearer " + token.trim())
+                    conn.connectTimeout = 15000
+                    conn.readTimeout = 120000
+                    if (conn.responseCode !in 200..299) {
+                        val code = conn.responseCode
+                        val error = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+                        throw IOException("Download failed: HTTP $code $error")
+                    }
+                    context.contentResolver.openOutputStream(uri)?.use { output ->
+                        conn.inputStream.use { input -> input.copyTo(output) }
+                    } ?: throw IOException("Could not open the selected save location.")
+                    conn.disconnect()
+                    mainHandler.post { openShortsState = "Clip saved to your selected folder." }
+                } catch (e: Exception) {
+                    mainHandler.post { openShortsState = "Clip download error: " + (e.message ?: "unknown error") }
                 }
             }.start()
         }
@@ -258,8 +288,8 @@ fun StudioScreen() {
                         for (index in 0 until array.length()) {
                             val item = array.optJSONObject(index) ?: continue
                             val title = item.optString("title", "Clip " + (index + 1))
-                            val link = item.optString("download_url").ifBlank { item.optString("video_url") }
-                            if (link.startsWith("https://")) clips.add(title to link)
+                            val link = item.optString("matangi_download_path")
+                            if (link.startsWith("/api/openshorts/jobs/")) clips.add(title to link)
                         }
                     }
                     val logs = job.optJSONArray("logs")
@@ -411,15 +441,12 @@ fun StudioScreen() {
                 if (openShortsJobId.isNotBlank()) Text("JOB ID  $openShortsJobId", color = muted, fontSize = 10.sp)
                 openShortsClips.forEachIndexed { index, clip ->
                     OutlinedButton(onClick = {
-                        try {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(clip.second)))
-                        } catch (_: Exception) {
-                            openShortsState = "Unable to open clip link on this device."
-                        }
+                        pendingOpenClipPath = clip.second
+                        saveOpenClip.launch("MATANGI_Short_" + (index + 1) + ".mp4")
                     }, modifier = Modifier.fillMaxWidth()) {
                         Icon(Icons.Default.Download, contentDescription = null)
                         Spacer(Modifier.width(6.dp))
-                        Text("Open clip " + (index + 1) + ": " + clip.first.take(42))
+                        Text("Save clip " + (index + 1) + ": " + clip.first.take(42))
                     }
                 }
                 Text("Self-hosted processing only by default. Hosted OpenShorts and social publishing are not enabled here.", color = muted, fontSize = 9.sp)
