@@ -6,7 +6,10 @@ no public image hosting is required. Provider generation is paid.
 from __future__ import annotations
 import argparse
 import subprocess
+import sys
 from pathlib import Path
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 from services.wan3_client import Wan3Client
 
 PROMPT_1 = ("Use this reference as the exact first frame and preserve the adult model's face, "
@@ -55,7 +58,7 @@ def main() -> None:
                 "-an","-c:v","libx264","-preset","medium","-crf","18","-movflags","+faststart",str(target)])
         normalized.append(target)
     concat=out / "concat.txt"
-    concat.write_text("".join(f"file '{p.resolve().as_posix()}'\\n" for p in normalized),encoding="utf-8")
+    concat.write_text("".join(f"file '{p.resolve().as_posix()}'\n" for p in normalized),encoding="utf-8")
     master=out / "blue-couture-vertical.mp4"
     ffmpeg(["-f","concat","-safe","0","-i",str(concat),"-c","copy","-movflags","+faststart",str(master)])
     print(f"Video master: {master.resolve()}")
