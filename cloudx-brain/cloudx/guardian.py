@@ -31,9 +31,9 @@ class Guardian:
                             runs = runs_response.json().get("workflow_runs", [])
                             latest = next((r for r in runs if r.get("status") == "completed"), None)
                             if latest:
-                                item["latest_workflow"] = {"name": latest.get("name"), "conclusion": latest.get("conclusion"), "url": latest.get("html_url")}
+                                item["latest_workflow"] = {"name": latest.get("name"), "conclusion": latest.get("conclusion"), "url": latest.get("html_url"), "run_id": latest.get("id"), "run_attempt": latest.get("run_attempt", 1)}
                                 if latest.get("conclusion") not in ("success", "neutral", "skipped"):
-                                    findings.append({"severity": "warning", "kind": "ci_failure", "target": name, "detail": f"Latest completed workflow: {latest.get('conclusion')}", "url": latest.get("html_url", "")})
+                                    findings.append({"severity": "warning", "kind": "ci_failure", "target": name, "detail": f"Latest completed workflow: {latest.get('conclusion')}", "url": latest.get("html_url", ""), "run_id": str(latest.get("id", "")), "run_attempt": str(latest.get("run_attempt", 1))})
                         elif runs_response.status_code not in (403, 404):
                             findings.append({"severity": "info", "kind": "ci_visibility", "target": name, "detail": f"Workflow status unavailable: HTTP {runs_response.status_code}"})
                 except httpx.HTTPError as exc:
