@@ -1,0 +1,49 @@
+{
+  "project": "Luxury Blue Couture — Reference Film",
+  "film_id": "blue-couture-reference-01",
+  "title": "Blue Couture — Luxury Editorial",
+  "render_status": "prompt_ready_reference_video_endpoint_unverified",
+  "references": [
+    {
+      "file": "reference-01-model-walking-blue-gown.jpg",
+      "purpose": "Primary full-length model, blue embroidered gown, grand chandelier ballroom, walking shot"
+    },
+    {
+      "file": "reference-02-model-seated-blue-look.jpg",
+      "purpose": "Same model and outfit styling, seated close-up, blue velvet sofa, night-city windows"
+    }
+  ],
+  "generation": {
+    "aspect_ratio": "9:16",
+    "target_duration_seconds": 10,
+    "fps": 24,
+    "requested_look": "photorealistic luxury fashion editorial",
+    "camera": "smooth stabilized cinematic movement",
+    "color_grade": "natural warm gold highlights and deep royal blue, no artificial beauty filter"
+  },
+  "scenes": [
+    {
+      "start": "00:00",
+      "end": "00:05",
+      "reference": "reference-01-model-walking-blue-gown.jpg",
+      "prompt": "Use the supplied first reference image as the exact visual anchor. Preserve the adult female model's facial identity, hair, makeup, body proportions, royal-blue sheer evening gown with intricate gold embroidery, gold hoop earrings and heels. She walks slowly and confidently toward camera through the same grand luxury ballroom with chandeliers and glossy marble floor. Full-length framing, realistic fabric flow and natural movement, subtle camera dolly backward, premium fashion campaign cinematography. Keep the dress elegant and unchanged. Natural skin texture, realistic anatomy, accurate hands and feet."
+    },
+    {
+      "start": "00:05",
+      "end": "00:10",
+      "reference": "reference-02-model-seated-blue-look.jpg",
+      "prompt": "Use the supplied second reference image as the exact visual anchor and maintain the same model identity, face, hairstyle, makeup, jewelry and royal-blue embroidered outfit seen in the first shot. She is seated elegantly on the deep blue velvet sofa in the same upscale night-time interior with warm chandelier light and city lights beyond the windows. She turns her gaze toward camera and makes a subtle natural pose adjustment. Medium-to-three-quarter framing, gentle cinematic camera push-in, realistic fabric and skin detail, premium luxury fashion editorial."
+    }
+  ],
+  "negative_prompt": "No face swap, no identity drift, no wardrobe change, no added people, no extra fingers, no fused hands, no distorted anatomy, no warped jewelry, no flicker, no frame morphing, no plastic skin, no excessive retouching, no beauty filter, no text, no logos, no watermark, no explicit nudity, no sexualized camera angles.",
+  "sound": "Silent clean master by default; add licensed soundtrack in editing if needed.",
+  "delivery": {
+    "master": "MP4 H.264, 1080x1920, 24fps",
+    "note": "4K upscale may be performed after generation; this is not native 4K generation."
+  },
+  "provider_requirements": {
+    "current_project_engine": "WaveSpeed Wan 3.0 text-to-video",
+    "image_reference_support": "Not implemented or verified in the current repository integration.",
+    "required_before_paid_render": "Verify account-enabled image-to-video model ID, schema, and reference image upload mechanism. Never submit these reference images to an unsupported text-only endpoint."
+  }
+}
