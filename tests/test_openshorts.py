@@ -73,6 +73,7 @@ def test_generate_and_poll_job(monkeypatch):
     assert polled.status_code == 200
     assert polled.json()["status"] == "completed"
     assert polled.json()["clips"][0]["title"] == "Clip 1"
+    assert polled.json()["clips"][0]["matangi_download_path"] == "/api/openshorts/jobs/job_123/clips/0/download"
 
 
 def test_invalid_job_id_rejected(monkeypatch):
