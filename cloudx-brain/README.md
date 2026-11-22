@@ -22,11 +22,14 @@ In this repository's Settings → Secrets and variables → Actions:
 - Secret CLOUDX_GITHUB_TOKEN: fine-grained token with Metadata read and Actions read on each monitored repository.
 - Variable CLOUDX_GITHUB_REPOS: comma-separated owner/repo names.
 - Optional variable CLOUDX_SERVICE_URLS: comma-separated health endpoints.
+- Optional variable CLOUDX_ENABLE_SAFE_RERUN=true: permits one retry of failed GitHub Actions jobs when run_attempt is 1. The monitored-repository token must also have Actions write permission; leave unset to keep retries disabled.
 - The built-in GITHUB_TOKEN needs Issues write permission to maintain the alert issue in this repository.
 
 The workflow runs from the default branch after the pull request is merged. GitHub Actions scheduling is periodic monitoring, not a continuously running server.
 
 ## Higgsfield setup
+
+CloudX's Python REST adapter follows the official Higgsfield API lifecycle. The official JavaScript SDK is also available at https://github.com/higgsfield-ai/higgsfield-js.
 Create an API key in the Higgsfield Console and store the key ID and secret as server-side environment variables HF_API_KEY_ID and HF_API_KEY_SECRET. Never put them in frontend code or commit them.
 
 Submit a generation:
