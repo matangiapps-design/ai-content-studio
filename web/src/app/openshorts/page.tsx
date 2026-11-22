@@ -60,18 +60,6 @@ export default function OpenShortsPage() {
     void checkEngine();
   }, [checkEngine]);
 
-  const pollJob = useCallback(async (id: string) => {
-    const response = await apiFetch(`/api/openshorts/jobs/${encodeURIComponent(id)}`);
-    const data = (await response.json()) as JobStatus;
-    setJob(data);
-    if (["completed", "failed"].includes(data.status)) {
-      setBusy(false);
-      setMessage(data.status === "completed" ? "Clips are ready." : data.error || "OpenShorts processing failed.");
-    } else {
-      setMessage(`OpenShorts: ${data.status}. Processing runs on your configured private service.`);
-    }
-  }, []);
-
   useEffect(() => {
     if (!jobId || !busy) return;
     let active = true;
