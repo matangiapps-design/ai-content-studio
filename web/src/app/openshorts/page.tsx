@@ -57,8 +57,23 @@ export default function OpenShortsPage() {
   }, []);
 
   useEffect(() => {
-    void checkEngine();
-  }, [checkEngine]);
+    let active = true;
+    const loadStatus = async () => {
+      try {
+        const response = await apiFetch("/api/openshorts/status");
+        const data = (await response.json()) as EngineStatus;
+        if (!active) return;
+        setEngine(data);
+        setMessage(data.reachable ? "OpenShorts is reachable." : data.message || "OpenShorts is not configured.");
+      } catch (error) {
+        if (!active) return;
+        setEngine(null);
+        setMessage(readableError(error));
+      }
+    };
+    void loadStatus();
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!jobId || !busy) return;
