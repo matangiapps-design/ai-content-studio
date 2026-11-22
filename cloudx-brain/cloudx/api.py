@@ -14,7 +14,7 @@ repair_agent = RepairAgent()
 
 class HiggsfieldGeneration(BaseModel):
     model_path: str = Field(min_length=3, max_length=180)
-    input: dict = Field(min_length=1)
+    input: dict
     idempotency_key: str | None = Field(default=None, max_length=128)
 
 @app.get("/health")
@@ -38,6 +38,8 @@ async def provider_status():
 
 @app.post("/higgsfield/requests")
 async def create_higgsfield_request(request: HiggsfieldGeneration):
+    if not request.input:
+        raise HTTPException(status_code=422, detail="The model input object cannot be empty.")
     try:
         result = await higgsfield.submit(request.model_path, request.input, request.idempotency_key)
         return result
