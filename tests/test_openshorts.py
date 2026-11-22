@@ -80,3 +80,12 @@ def test_invalid_job_id_rejected(monkeypatch):
     monkeypatch.setenv("OPENSHORTS_API_URL", "http://openshorts-backend:8000")
     response = _client().get("/api/openshorts/jobs/../../secrets")
     assert response.status_code in {404, 400}
+
+
+def test_optional_gemini_key_is_forwarded_only_as_header(monkeypatch):
+    monkeypatch.setenv("OPENSHORTS_API_KEY", "private-api-token")
+    monkeypatch.setenv("OPENSHORTS_GEMINI_API_KEY", "private-gemini-token")
+    headers = openshorts._headers()
+    assert headers["Authorization"] == "Bearer private-api-token"
+    assert headers["X-Gemini-Key"] == "private-gemini-token"
+    assert "private-gemini-token" not in str(headers.get("Authorization"))
