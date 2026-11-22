@@ -3,17 +3,6 @@ name: Blue Couture Free Video Render
 on:
   workflow_dispatch:
     inputs:
-      duration:
-        description: "Total video duration in seconds"
-        required: true
-        default: "10"
-      resolution:
-        description: "Output size"
-        required: true
-        type: choice
-        options:
-          - "1080x1920"
-          - "720x1280"
 
 permissions:
   contents: read
@@ -29,18 +18,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-      - name: Download reference images from workflow inputs
-        env:
-          IMAGE_ONE: ${{ inputs.reference_one }}
-          IMAGE_TWO: ${{ inputs.reference_two }}
+      - name: Verify reference images
         run: |
-          echo "This workflow expects reference files to be committed under assets/blue_couture/."
           test -f assets/blue_couture/reference-01-model-walking-blue-gown.jpg
           test -f assets/blue_couture/reference-02-model-seated-blue-look.jpg
       - name: Render free motion-photo MP4
         env:
-          DURATION: ${{ inputs.duration }}
-          SIZE: ${{ inputs.resolution }}
+          DURATION: "10"
+          SIZE: "1080x1920"
         run: |
           mkdir -p output
           WIDTH=${SIZE%x*}
