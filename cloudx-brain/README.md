@@ -1,27 +1,46 @@
-# CloudX Brain — bootstrap
+# CloudX Brain
 
-CloudX is the control plane for the user's connected repositories, agents, GPU services, and creative providers.
+CloudX is a modular control plane for repositories, agents, GPU services, and creative providers.
 
-## Bootstrap scope
-- Read-only Guardian scans selected GitHub repositories and optional HTTP health endpoints.
-- FastAPI control plane exposes health, agent inventory, provider status, and scan endpoints.
-- Higgsfield connector boundary is included, but generation is intentionally disabled until the current account API contract is verified.
-- CI runs tests. A scheduled GitHub Actions watchdog checks repository reachability every 15 minutes.
+## Implemented in this milestone
+- FastAPI control plane: health, agent inventory, provider status, Guardian scan, and persistent SQLite event memory.
+- Guardian checks repository reachability, latest completed GitHub Actions workflows, and configured HTTP service endpoints.
+- Repair Agent converts evidence into actionable repair plans. It never edits source code or deploys.
+- Scheduled GitHub Actions workflow runs every 15 minutes and maintains one alert issue in this repository.
+- CI workflow runs unit tests.
+- Higgsfield REST connector uses the documented server-side Key authentication, model-specific endpoint path, idempotency key, and request-status polling. It does not guess a model schema.
 
-## Safety
-Guardian is observe → diagnose → propose → test → approval → merge/deploy. This bootstrap does not write to repositories, merge PRs, or deploy. Automated repair remains disabled until a sandboxed branch/PR workflow and test gates are implemented.
-
-## Run
-Copy `cloudx-brain/.env.example` to `cloudx-brain/.env`, configure a read-only GitHub token and repository list, then run:
+## Run locally
+Copy cloudx-brain/.env.example to cloudx-brain/.env, configure tokens, then run:
 ```bash
 docker compose -f cloudx-brain/docker-compose.yml up --build
 ```
-API docs: `http://localhost:8000/docs`.
+API docs: http://localhost:8000/docs.
 
-## Next milestones
-1. Persistent event/memory store and knowledge graph.
-2. Task queue and orchestrator.
-3. Model router and local/cloud GPU adapters.
-4. Sandboxed repair agent that creates branches and PRs only.
-5. Higgsfield image/video job adapter with verified API schema.
-6. Dashboard, alerts, metrics, backup and recovery.
+## GitHub monitoring setup
+In this repository's Settings → Secrets and variables → Actions:
+- Secret CLOUDX_GITHUB_TOKEN: fine-grained token with Metadata read and Actions read on each monitored repository.
+- Variable CLOUDX_GITHUB_REPOS: comma-separated owner/repo names.
+- Optional variable CLOUDX_SERVICE_URLS: comma-separated health endpoints.
+- The built-in GITHUB_TOKEN needs Issues write permission to maintain the alert issue in this repository.
+
+The workflow runs from the default branch after the pull request is merged. GitHub Actions scheduling is periodic monitoring, not a continuously running server.
+
+## Higgsfield setup
+Create an API key in the Higgsfield Console and store the key ID and secret as server-side environment variables HF_API_KEY_ID and HF_API_KEY_SECRET. Never put them in frontend code or commit them.
+
+Submit a generation:
+```http
+POST /higgsfield/requests
+Content-Type: application/json
+
+{"model_path":"higgsfield-ai/soul/v2/standard","input":{"prompt":"A cinematic mountain landscape"}}
+```
+Check the returned request ID:
+```http
+GET /higgsfield/requests/{request_id}
+```
+Select a model and request fields from its current model-specific API documentation. API usage is pay-as-you-go; generation calls can incur charges.
+
+## Not yet implemented
+A general LLM-backed code patcher, sandboxed patch execution and PR creation, semantic knowledge graph, task queue, model router, GPU scheduler, dashboard, external alerts, and live Higgsfield account validation. Source repair remains proposal-only until isolated patching and evaluation gates are implemented.
