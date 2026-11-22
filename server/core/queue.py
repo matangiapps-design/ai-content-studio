@@ -40,7 +40,7 @@ def _decode_argument(value):
         return getattr(importlib.import_module(module), name).model_validate(value["value"])
     return value["value"]
 
-TASK_MODULES = {"server.routers." + name for name in ("generation", "clipper", "director", "explainer", "videofx")}
+TASK_MODULES = {"server.routers." + name for name in ("generation", "clipper", "director", "explainer", "videofx", "wan3")}
 
 def _run_persisted_task(task_id):
     from server.core.database import QueueTask
