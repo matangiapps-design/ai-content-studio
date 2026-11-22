@@ -1,55 +1,77 @@
 # MATANGI Free-First Video Pipeline
 
-## Decision
+## Integration status
 
-Use **OpenShorts** as a separate, self-hosted clip-production service alongside MATANGI Creator Studio. Do not copy its source into this repository or bundle its Python/Docker stack inside the Android APK.
+MATANGI now contains an optional OpenShorts adapter, exposed to the web and Android clients through the authenticated backend:
 
-- Upstream: https://github.com/mutonby/openshorts
-- Core license: MIT. The upstream `cloud/` directory has a separate commercial license; MATANGI does not need that directory for self-hosting.
-- Main functions: long-video clipping, 9:16 reframing, transcript-based moment selection, subtitles, clip editing and optional social publishing.
-- The Android app remains a client; video processing runs on a computer/server with Docker and adequate memory.
+- `GET /api/openshorts/status` — checks whether the configured OpenShorts API is reachable.
+- `POST /api/openshorts/generate` — submits a public HTTPS video URL for vertical clipping.
+- `GET /api/openshorts/jobs/{job_id}` — checks asynchronous job status and returns completed clips.
 
-## Cost and requirements
+The adapter uses OpenShorts' documented REST contract: `POST /api/process` and `GET /api/status/{job_id}`. It submits only clipping jobs. It does **not** publish to social media, create AI actors, dub audio, or invoke paid video-generation models.
 
-- OpenShorts self-hosting software: free under its MIT core license.
-- Minimum practical setup from upstream docs: Docker + Docker Compose and 8 GB+ RAM. Model downloads and CPU processing use local disk, memory and compute.
-- Clip selection can use a local OpenAI-compatible LLM (for example Ollama/LM Studio) through `LLM_BASE_URL`, avoiding a Gemini key for transcript-based moment selection. Gemini is still needed for some visual-layout and silent-video paths.
-- AI actor/video generation, dubbing and social publishing are optional and may require separate API keys or paid services. Keep them disabled until explicitly configured.
-- No Render deployment, paid hosting, paid GPU, or paid API is required for the self-hosted clip workflow.
+Upstream: https://github.com/mutonby/openshorts
 
-## Safe setup (run on a PC/server, not on Android)
+## Free-first safety defaults
 
-1. Install Docker Engine/Desktop and Docker Compose.
-2. Clone the upstream repository:
+- `OPENSHORTS_API_URL` is empty by default, so the integration stays disabled until a self-hosted service is configured.
+- Public/hosted OpenShorts URLs are blocked by default. Do not set `OPENSHORTS_ALLOW_HOSTED=true` unless hosted quota/billing use is deliberately intended.
+- Self-hosted OpenShorts uses no API key. `OPENSHORTS_API_KEY` is optional for a private instance that requires one.
+- No automatic low-quality retry occurs. If OpenShorts returns `needs_confirmation`, MATANGI returns a quality warning without submitting a forced low-quality job.
+- Processing requires a positive rights acknowledgement. Only submit videos you own or have permission to process.
+- Social publishing is intentionally not exposed in this adapter.
+
+## Self-host OpenShorts
+
+OpenShorts' core repository is MIT-licensed. Its self-hosted stack uses Docker Compose, Python/FFmpeg and local model resources. The upstream Docker Compose file starts an API service on port 8000 and a dashboard on port 5175; the API itself is sufficient for MATANGI.
+
+1. On a PC or server with Docker Engine and Docker Compose, clone and start the upstream project:
    ```bash
    git clone https://github.com/mutonby/openshorts.git
    cd openshorts
+   docker compose up --build -d
    ```
-3. Review upstream `.env.example` and `docker-compose.yml`. Do not add cloud billing components or commit API keys.
-4. Start the upstream stack:
-   ```bash
-   docker compose up --build
+2. Keep the unauthenticated self-hosted API on a private interface/network. Do not expose port 8000 to the public internet.
+3. Make port 8000 reachable from the MATANGI backend over a private network. When both stacks share a Docker network, use the OpenShorts service DNS name (for example `http://openshorts-backend:8000`). For a backend running directly on the same machine, use `http://127.0.0.1:8000`.
+4. Add these variables to the MATANGI backend environment (or its local `.env`), then restart the MATANGI backend:
+   ```dotenv
+   OPENSHORTS_API_URL=http://openshorts-backend:8000
+   OPENSHORTS_API_KEY=
+   OPENSHORTS_ALLOW_HOSTED=false
    ```
-5. Open the local dashboard at `http://localhost:5175` as documented upstream.
-6. Configure a local LLM if available; otherwise configure a Gemini key directly in the local OpenShorts settings. Never paste secrets into GitHub or ChatGPT.
-7. Test with a short video you own or have permission to process. Export a vertical clip and check captions, crop, audio and output quality.
+   Replace the URL with the private address reachable from the MATANGI backend. A Docker container's `127.0.0.1` is the container itself, not the host or another container.
+5. Open MATANGI's **OpenShorts AI** page or Android app section and run **Test connection**. It should report the OpenShorts API as ready before any clipping job is submitted.
 
-## MATANGI integration boundary
+### Local model option
 
-The upstream project documents a REST API, OpenAPI docs at `/docs`, an MCP endpoint at `/mcp`, and completion webhooks. Its documented processing request is `POST /api/process`. A future MATANGI backend adapter can submit a source URL, record the returned job ID, receive the completion webhook, and expose the resulting clip links to the app.
+The upstream project supports an OpenAI-compatible local language model through `LLM_BASE_URL` and `LLM_MODEL` for transcript-based moment selection. For example, an Ollama instance can be used on the same host. Model downloads and CPU/GPU processing still consume local disk, memory, electricity and hardware; “free” means no OpenShorts subscription, not zero resource cost. Some visual-layout and silent-video workflows may still use Gemini unless the relevant stages are disabled or locally supported.
 
-**Not yet implemented:** this repository does not currently contain an OpenShorts API adapter, Android UI, webhook receiver, or automated social publishing integration. This document is the integration plan only. Do not display OpenShorts as a connected engine until an actual instance has been configured and health-tested.
+## API behaviour
+
+- Source URL must be public HTTPS.
+- The user must confirm rights to process the source.
+- Default output is vertical; clip duration defaults to 15–60 seconds.
+- OpenShorts returns a job ID immediately. Processing can take minutes; MATANGI polls its job status endpoint.
+- A 402 quota response or 429 concurrency response is surfaced; MATANGI does not retry the job automatically.
+- A low-source-quality response is surfaced as a confirmation requirement; MATANGI does not bypass it.
+
+## What is deliberately not included
+
+- No Render deployment or cloud service is created.
+- No paid OpenShorts cloud usage is enabled by default.
+- No WaveSpeed API is used by this integration.
+- No social accounts are connected or posts published.
+- No third-party OpenShorts source code is copied into MATANGI; the integration calls the separately self-hosted API.
 
 ## Security
 
-- Keep a self-hosted instance bound to localhost or a private network until authentication and HTTPS are configured.
-- Never expose an unauthenticated local processing API to the public internet.
-- Never commit `.env`, API keys, YouTube cookies, session tokens or user media.
-- Use only media you own or are authorized to process.
-- Keep social publishing disconnected until each destination account is intentionally connected and tested.
+- Keep the self-hosted OpenShorts API private; it is unauthenticated by default.
+- Never commit `.env`, API keys, cookies, session tokens, or user videos.
+- Optional hosted mode is disabled by default to prevent surprise metered use.
+- Only process media for which you hold the required rights.
 
 ## Upstream references
 
 - https://github.com/mutonby/openshorts
-- https://github.com/mutonby/openshorts#run-without-a-google-key-local-llm-optional
-- https://github.com/mutonby/openshorts#rest-api--api-keys
+- https://github.com/mutonby/openshorts/blob/main/skills/openshorts/reference.md
+- https://github.com/mutonby/openshorts/blob/main/LICENSE
