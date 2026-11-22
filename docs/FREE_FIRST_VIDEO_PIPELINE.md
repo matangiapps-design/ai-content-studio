@@ -21,26 +21,50 @@ Upstream: https://github.com/mutonby/openshorts
 - Processing requires a positive rights acknowledgement. Only submit videos you own or have permission to process.
 - Social publishing is intentionally not exposed in this adapter.
 
-## Self-host OpenShorts
+## Self-host OpenShorts alongside MATANGI
 
-OpenShorts' core repository is MIT-licensed. Its self-hosted stack uses Docker Compose, Python/FFmpeg and local model resources. The upstream Docker Compose file starts an API service on port 8000 and a dashboard on port 5175; the API itself is sufficient for MATANGI.
+OpenShorts' core repository is MIT-licensed. The integration can use a local Docker installation with no OpenShorts subscription. The OpenShorts API itself still needs either a Gemini key or an OpenAI-compatible local LLM for its AI moment-selection stage.
 
-1. On a PC or server with Docker Engine and Docker Compose, clone and start the upstream project:
+### 1. Prepare MATANGI
+
+1. Install Docker Engine and Docker Compose v2.24 or newer on a PC/server. This is a local/server setup; it does not deploy anything to Render or another cloud.
+2. Clone the MATANGI repository and enter it:
    ```bash
-   git clone https://github.com/mutonby/openshorts.git
-   cd openshorts
-   docker compose up --build -d
+   git clone https://github.com/matangiapps-design/ai-content-studio.git
+   cd ai-content-studio
+   cp .env.example .env
    ```
-2. Keep the unauthenticated self-hosted API on a private interface/network. Do not expose port 8000 to the public internet.
-3. Make port 8000 reachable from the MATANGI backend over a private network. When both stacks share a Docker network, use the OpenShorts service DNS name (for example `http://openshorts-backend:8000`). For a backend running directly on the same machine, use `http://127.0.0.1:8000`.
-4. Add these variables to the MATANGI backend environment (or its local `.env`), then restart the MATANGI backend:
-   ```dotenv
-   OPENSHORTS_API_URL=http://openshorts-backend:8000
-   OPENSHORTS_API_KEY=
-   OPENSHORTS_ALLOW_HOSTED=false
+3. Edit `.env`: set a strong `STUDIO_API_TOKEN`, your MATANGI `STUDIO_PUBLIC_ORIGIN`, and `OPENSHORTS_API_URL=http://openshorts-backend:8000`. Leave `OPENSHORTS_ALLOW_HOSTED=false`. If using Gemini, set `OPENSHORTS_GEMINI_API_KEY` in this local file. Do not commit it.
+4. Start MATANGI's backend once so Docker creates the shared private network:
+   ```bash
+   docker compose up -d backend
    ```
-   Replace the URL with the private address reachable from the MATANGI backend. The MATANGI Docker Compose configuration now reads these variables from `.env` and keeps hosted mode disabled. A Docker container's `127.0.0.1` is the container itself, not the host or another container. If you use Gemini, keep the key only in MATANGI's local `.env`; the adapter forwards it to the private OpenShorts API in the `X-Gemini-Key` header. If you use a local LLM, configure `LLM_BASE_URL` and `LLM_MODEL` in the OpenShorts service `.env` instead and leave `OPENSHORTS_GEMINI_API_KEY` blank.
-5. Open MATANGI's **OpenShorts AI** page or Android app section and run **Test connection**. It should report the OpenShorts API as ready before any clipping job is submitted.
+
+### 2. Start OpenShorts on the same private network
+
+From the MATANGI repository root:
+```bash
+git clone https://github.com/mutonby/openshorts.git
+docker compose -p openshorts -f openshorts/docker-compose.yml -f ops/openshorts-network.override.yml up --build -d backend renderer
+``
+
+The override attaches OpenShorts to MATANGI's private `matangi_shared` Docker network and removes the upstream API/renderer host port mappings. The OpenShorts API remains reachable by the MATANGI backend at `http://openshorts-backend:8000` without exposing port 8000 publicly. The upstream renderer stays on OpenShorts' private default network with its backend.
+
+### 3. Start MATANGI and verify
+
+```bash
+docker compose up -d
+docker compose ps
+``
+
+Open MATANGI's **OpenShorts AI** page or Android app section and select **Test connection**. It should report OpenShorts as reachable before submitting any clipping job.
+
+### 4. AI key choice
+
+- **Gemini:** put the key in MATANGI's local `.env` as `OPENSHORTS_GEMINI_API_KEY`. MATANGI forwards it to the private OpenShorts API as `X-Gemini-Key`; it is not placed in the job body or committed to Git.
+- **Local model:** configure `LLM_BASE_URL` and `LLM_MODEL` in OpenShorts' own `.env` for an OpenAI-compatible local model (Ollama, LM Studio, vLLM, llama.cpp, or LocalAI). Leave `OPENSHORTS_GEMINI_API_KEY` blank. The local model host must be reachable from the OpenShorts container.
+
+OpenShorts' own `.env.example` documents additional optional settings. Keep AWS/S3, Google OAuth, hosted billing and social publishing credentials blank unless you deliberately need those features. MATANGI's integration does not use or activate those features.
 
 ### Local model option
 
