@@ -178,7 +178,7 @@ export default function HistoryPage() {
           <Film className="h-12 w-12 text-zinc-600 mx-auto" />
           <h3 className="text-lg font-bold text-white">No Rendered Projects Found</h3>
           <p className="text-zinc-400 text-sm max-w-sm mx-auto">
-            You haven't generated any videos yet. Launch Quick Creator or Director Mode to produce your first content.
+            You haven&apos;t generated any videos yet. Launch Quick Creator or Director Mode to produce your first content.
           </p>
         </div>
       ) : (
