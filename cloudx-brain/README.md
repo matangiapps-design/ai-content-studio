@@ -12,7 +12,7 @@ CloudX is the control plane for the user's connected repositories, agents, GPU s
 Guardian is observe → diagnose → propose → test → approval → merge/deploy. This bootstrap does not write to repositories, merge PRs, or deploy. Automated repair remains disabled until a sandboxed branch/PR workflow and test gates are implemented.
 
 ## Run
-Copy `.env.example` to `.env`, configure a read-only GitHub token and repository list, then run:
+Copy `cloudx-brain/.env.example` to `cloudx-brain/.env`, configure a read-only GitHub token and repository list, then run:
 ```bash
 docker compose -f cloudx-brain/docker-compose.yml up --build
 ```
