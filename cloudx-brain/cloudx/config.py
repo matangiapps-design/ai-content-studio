@@ -6,8 +6,8 @@ class Settings(BaseSettings):
     github_repos: str = ""
     service_urls: str = ""
     guardian_interval_seconds: int = 300
-    higgsfield_api_key: str = ""
-    higgsfield_base_url: str = ""
+    higgsfield_api_key_id: str = ""
+    higgsfield_api_key_secret: str = ""
     allow_automated_repair: bool = False
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
