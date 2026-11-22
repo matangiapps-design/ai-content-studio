@@ -27,12 +27,14 @@ async def main() -> int:
     async with httpx.AsyncClient(timeout=20, headers=headers) as client:
         # Optional, bounded recovery: retry a failed workflow once, never loop.
         if os.getenv("CLOUDX_ENABLE_SAFE_RERUN", "false").lower() == "true":
-            for finding in report["findings"]:
-                if finding.get("kind") != "ci_failure" or finding.get("run_attempt") != "1" or not finding.get("run_id"):
-                    continue
-                target = finding.get("target", "")
-                rerun = await client.post(f"https://api.github.com/repos/{target}/actions/runs/{finding['run_id']}/rerun-failed-jobs")
-                finding["safe_rerun"] = "requested" if rerun.status_code == 201 else f"not_requested_http_{rerun.status_code}"
+            rerun_headers = Guardian(read_token).headers()
+            async with httpx.AsyncClient(timeout=20, headers=rerun_headers) as repair_client:
+                for finding in report["findings"]:
+                    if finding.get("kind") != "ci_failure" or finding.get("run_attempt") != "1" or not finding.get("run_id"):
+                        continue
+                    target = finding.get("target", "")
+                    rerun = await repair_client.post(f"https://api.github.com/repos/{target}/actions/runs/{finding['run_id']}/rerun-failed-jobs")
+                    finding["safe_rerun"] = "requested" if rerun.status_code == 201 else f"not_requested_http_{rerun.status_code}"
         base = f"https://api.github.com/repos/{host}/issues"
         response = await client.get(base, params={"state": "open", "per_page": 100})
         if not response.is_success:
