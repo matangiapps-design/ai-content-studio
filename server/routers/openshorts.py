@@ -55,6 +55,9 @@ def _headers() -> dict[str, str]:
     key = os.getenv("OPENSHORTS_API_KEY", "").strip()
     if key:
         headers["Authorization"] = f"Bearer {key}"
+    gemini_key = os.getenv("OPENSHORTS_GEMINI_API_KEY", "").strip()
+    if gemini_key:
+        headers["X-Gemini-Key"] = gemini_key
     return headers
 
 
