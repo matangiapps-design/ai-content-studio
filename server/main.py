@@ -113,7 +113,7 @@ def logout():
 app.include_router(generation.router, prefix="/api/generate", tags=["Generation"])
 app.include_router(clipper.router, prefix="/api/clipper", tags=["Clipper"])
 app.include_router(videofx.router, prefix="/api/videofx", tags=["VideoFX Flow"])
-app.include_router(wan3.router, prefix="/api/wan3", tags=["Wan 3.0 Video"])
+app.include_router(wan3.router, prefix="/api/wan3", tags=["Wan 3.0 Video"])\napp.include_router(openshorts.router, prefix="/api/openshorts", tags=["OpenShorts Clipper"])
 app.include_router(director.router, prefix="/api/director", tags=["Director"])
 app.include_router(explainer.router, prefix="/api/explainer", tags=["Explainer"])
 app.include_router(brand.router, prefix="/api/brand", tags=["Brand"])
