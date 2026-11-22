@@ -36,6 +36,7 @@ def get_whisper_model(model_name: str = "base"):
 
 # Import the API client classes
 from api_clients import GoogleClient, WaveSpeedClient, NewsApiClient, PixabayClient
+from services.wan3_client import Wan3Client
 
 # --- Constants for Pipeline Flow ---
 PIPELINE_STEPS = [
@@ -581,8 +582,23 @@ class Pipeline:
                             
                         prompt = self.google_client.generate_video_prompt(topic, segment_text, self.config.get("VIDEO_PROMPT_BASE_STYLE"), content_style)
                         try:
-                            if self.config.get("VIDEO_ENGINE") == "Vertex AI (Veo)":
+                            video_engine = self.config.get("VIDEO_ENGINE", "WaveSpeed AI")
+                            if video_engine == "Vertex AI (Veo)":
                                 self.google_client.vertex_ai_text_to_video(prompt, clip_path, "16:9" if aspect == "16:9 (Horizontal)" else "9:16")
+                            elif video_engine == "WaveSpeed AI (Wan 3.0)":
+                                wan = Wan3Client(api_key=self.config.get("WAVESPEED_API_KEY") or self.config.get("WAVESPEED_AI_KEY"))
+                                aspect_ratio = {
+                                    "16:9 (Horizontal)": "16:9", "9:16 (Vertical)": "9:16",
+                                    "1:1 (Square)": "1:1", "16:9": "16:9", "9:16": "9:16", "1:1": "1:1"
+                                }.get(aspect, "16:9")
+                                duration = max(2, min(30, video_interval))
+                                task_id = wan.submit(
+                                    prompt, duration=duration, aspect_ratio=aspect_ratio,
+                                    resolution=self.config.get("WAN3_RESOLUTION", "720p"),
+                                    enable_audio=False, enable_prompt_expansion=False
+                                )
+                                output_url = wan.wait(task_id)
+                                wan.download(output_url, clip_path)
                             else:
                                 self.wavespeed_client.text_to_video(self.config.get("WAVESPEED_VIDEO_MODEL"), prompt, clip_path, aspect)
                             clip_paths.append(clip_path)
