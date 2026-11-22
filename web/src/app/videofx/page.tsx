@@ -1,7 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/lib/api";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Play, Loader2, StopCircle, LogIn, Maximize, AlertCircle, SlidersHorizontal, Download } from "lucide-react";
 import Image from "next/image";
 import { API_BASE_URL, WS_BASE_URL, getMediaUrl } from "@/lib/api";
