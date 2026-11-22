@@ -16,6 +16,7 @@ class HiggsfieldGeneration(BaseModel):
     model_path: str = Field(min_length=3, max_length=180)
     input: dict
     idempotency_key: str | None = Field(default=None, max_length=128)
+    confirm_paid_generation: bool = False
 
 @app.get("/health")
 async def health():
@@ -38,6 +39,8 @@ async def provider_status():
 
 @app.post("/higgsfield/requests")
 async def create_higgsfield_request(request: HiggsfieldGeneration):
+    if not request.confirm_paid_generation:
+        raise HTTPException(status_code=400, detail="Set confirm_paid_generation=true to authorize a potentially billable Higgsfield request.")
     if not request.input:
         raise HTTPException(status_code=422, detail="The model input object cannot be empty.")
     try:
