@@ -62,7 +62,8 @@ async def main() -> int:
             if not result.is_success:
                 print(f"Cannot close recovered alert: HTTP {result.status_code}")
                 return 1
-    return 1 if report["findings"] else 0
+    # A finding is not a failed monitor run once the alert was delivered.
+    return 0
 
 if __name__ == "__main__":
     sys.exit(asyncio.run(main()))
