@@ -1,6 +1,4 @@
 """Contract tests for the OpenShorts adapter; no external service is contacted."""
-import asyncio
-
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -29,6 +27,15 @@ def test_public_host_blocked_by_default(monkeypatch):
     assert "disabled" in error.lower()
 
 
+def test_hosted_mode_requires_explicit_opt_in(monkeypatch):
+    monkeypatch.setenv("OPENSHORTS_API_URL", "https://api.openshorts.app")
+    monkeypatch.setenv("OPENSHORTS_ALLOW_HOSTED", "true")
+    base, self_hosted, error = openshorts._service_config()
+    assert base == "https://api.openshorts.app"
+    assert self_hosted is False
+    assert error is None
+
+
 def test_generate_requires_rights_acknowledgement(monkeypatch):
     monkeypatch.setenv("OPENSHORTS_API_URL", "http://openshorts-backend:8000")
     response = _client().post("/api/openshorts/generate", json={
@@ -51,7 +58,7 @@ def test_generate_and_poll_job(monkeypatch):
             return 200, {
                 "status": "completed",
                 "logs": ["done"],
-                "result": {"clips": [{"title": "Clip 1", "download_url": "https://cdn.example/clip.mp4"}]},
+                "result": {"clips": [{"title": "Clip 1", "video_url": "/videos/job_123/clip.mp4"}]},
             }
         raise AssertionError(f"Unexpected request: {method} {path}")
 
@@ -76,10 +83,40 @@ def test_generate_and_poll_job(monkeypatch):
     assert polled.json()["clips"][0]["matangi_download_path"] == "/api/openshorts/jobs/job_123/clips/0/download"
 
 
+def test_clip_download_rejects_foreign_origin(monkeypatch):
+    monkeypatch.setenv("OPENSHORTS_API_URL", "http://openshorts-backend:8000")
+
+    async def fake_get_job(_job_id):
+        return {
+            "status": "completed",
+            "result": {"clips": [{"title": "Clip", "download_url": "https://attacker.example/clip.mp4"}]},
+        }
+
+    monkeypatch.setattr(openshorts, "_get_job", fake_get_job)
+    response = _client().get("/api/openshorts/jobs/job_123/clips/0/download")
+    assert response.status_code == 502
+    assert "outside its configured service origin" in response.text
+
+
+def test_status_uses_openapi_health_probe(monkeypatch):
+    monkeypatch.setenv("OPENSHORTS_API_URL", "http://openshorts-backend:8000")
+
+    async def fake_request(method, path, payload=None):
+        assert method == "GET"
+        assert path == "/openapi.json"
+        return 200, {"info": {"title": "OpenShorts", "version": "1.0"}}
+
+    monkeypatch.setattr(openshorts, "_request", fake_request)
+    response = _client().get("/api/openshorts/status")
+    assert response.status_code == 200
+    assert response.json()["reachable"] is True
+    assert response.json()["service"] == "OpenShorts"
+
+
 def test_invalid_job_id_rejected(monkeypatch):
     monkeypatch.setenv("OPENSHORTS_API_URL", "http://openshorts-backend:8000")
     response = _client().get("/api/openshorts/jobs/../../secrets")
-    assert response.status_code in {404, 400}
+    assert response.status_code in {400, 404}
 
 
 def test_optional_gemini_key_is_forwarded_only_as_header(monkeypatch):
