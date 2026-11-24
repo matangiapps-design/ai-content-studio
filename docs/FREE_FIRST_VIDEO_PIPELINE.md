@@ -46,7 +46,7 @@ From the MATANGI repository root:
 ```bash
 git clone https://github.com/mutonby/openshorts.git
 docker compose -p openshorts -f openshorts/docker-compose.yml -f ops/openshorts-network.override.yml up --build -d backend renderer
-``
+```
 
 The override attaches OpenShorts to MATANGI's private `matangi_shared` Docker network and removes the upstream API/renderer host port mappings. The OpenShorts API remains reachable by the MATANGI backend at `http://openshorts-backend:8000` without exposing port 8000 publicly. The upstream renderer stays on OpenShorts' private default network with its backend.
 
