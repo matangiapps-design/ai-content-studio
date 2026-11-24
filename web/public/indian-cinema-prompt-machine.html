@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MATANGI FILMS — Indian Cinema Prompt Machine</title>
+<style>
+:root{color-scheme:dark;--bg:#090b12;--panel:#121725;--line:#293247;--text:#f4f6fb;--muted:#9da8bd;--pink:#f04d9b;--gold:#e8bd72}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 0%,#25203b 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,Arial,sans-serif}
+main{max-width:1100px;margin:auto;padding:28px 18px 60px}.brand{color:var(--pink);font-weight:800;letter-spacing:.15em;font-size:12px}.hero{margin:10px 0 24px}.hero h1{font-size:clamp(30px,6vw,52px);line-height:1.05;margin:8px 0}.hero p,.hint{color:var(--muted)}.layout{display:grid;grid-template-columns:340px 1fr;gap:18px}.panel{background:rgba(18,23,37,.94);border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px;color:#dce3f2}input,select,textarea{width:100%;background:#0b101b;color:var(--text);border:1px solid #344058;border-radius:10px;padding:11px;font:inherit}textarea{min-height:78px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.checks{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.chip{border:1px solid #38445d;border-radius:999px;padding:6px 10px;color:#cbd4e5;font-size:12px}.btns{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;background:var(--pink);color:#160a13}.btn.secondary{background:#242e42;color:#f1f4fa;border:1px solid #3a4964}.output{white-space:pre-wrap;overflow-wrap:anywhere;background:#090e18;border:1px solid #2b3850;border-radius:12px;padding:16px;min-height:420px;color:#e5eaf4;font:13px/1.65 ui-monospace,monospace}.stats{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.stats span{background:#1c2638;border:1px solid #34415a;border-radius:8px;padding:6px 9px;font-size:12px;color:#cbd5e6}.notice{border-left:3px solid var(--gold);padding:9px 12px;background:#201b15;color:#d9c9a9;border-radius:5px;font-size:12px;margin-top:16px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.output{min-height:340px}}
+</style></head>
+<body><main>
+<div class="brand">MATANGI FILMS / CREATIVE TOOLS</div>
+<header class="hero"><h1>Indian Cinema<br><span style="color:var(--pink)">Prompt Machine</span></h1><p>Build a connected shot list and copy-ready prompts for cinematic AI video workflows.</p></header>
+<div class="layout">
+<section class="panel">
+<h2 style="margin:0">Production brief</h2>
+<label for="industry">Film tradition</label><select id="industry"><option>Bollywood mainstream</option><option>South Indian action drama</option><option>Odia cinema</option><option>Bengali cinema</option><option>Punjabi cinema</option><option>Marathi cinema</option><option>Malayalam realistic drama</option><option>Pan-Indian period epic</option></select>
+<label for="genre">Genre</label><select id="genre"><option>Romantic drama</option><option>Action thriller</option><option>Family drama</option><option>Mystery thriller</option><option>Historical epic</option><option>Musical dance sequence</option><option>Fashion and music video</option><option>Comedy</option><option>Supernatural suspense</option></select>
+<label for="language">Dialogue / narration language</label><select id="language"><option>Hindi</option><option>Odia</option><option>English</option><option>Bengali</option><option>Tamil</option><option>Telugu</option><option>Malayalam</option><option>Punjabi</option><option>Marathi</option><option>No dialogue</option></select>
+<label for="setting">Location / setting</label><input id="setting" value="A heritage palace courtyard in Rajasthan at golden hour">
+<label for="characters">Fictional adult characters</label><textarea id="characters">Two original adult Indian lead characters; preserve the same faces, hair, wardrobe palette and body proportions in every shot.</textarea>
+<label for="story">Scene action / story beat</label><textarea id="story">The leads meet after years apart, exchange a meaningful look, then walk together through the palace courtyard.</textarea>
+<div class="row"><div><label for="duration">Clip duration</label><select id="duration"><option>5 seconds</option><option selected>8 seconds</option><option>10 seconds</option><option>15 seconds</option></select></div><div><label for="count">Number of shots</label><select id="count"><option>5</option><option selected>10</option><option>12</option><option>15</option></select></div></div>
+<label for="ratio">Aspect ratio</label><select id="ratio"><option>16:9 cinematic</option><option>9:16 vertical</option><option>1:1 square</option></select>
+<label for="model">Target workflow</label><select id="model"><option>Wan / ComfyUI</option><option>LTX-Video</option><option>Generic text-to-video</option><option>Image-to-video</option></select>
+<label for="look">Visual treatment</label><select id="look"><option>Photorealistic theatrical cinema</option><option>Warm filmic romance</option><option>High-energy commercial action</option><option>Naturalistic indie film</option><option>Vintage 35mm film</option><option>Stylised period epic</option></select>
+<div class="checks"><span class="chip">Original fictional adults</span><span class="chip">Non-explicit cinema</span><span class="chip">Continuity-aware</span></div>
+<div class="btns"><button class="btn" id="generate">Generate shot prompts</button><button class="btn secondary" id="sample">Load sample</button></div>
+<div class="notice">Use fictional adult characters only. Do not create intimate or sexual imagery of real people, minors, or anyone without consent. This tool writes prompts; it does not render video.</div>
+</section>
+<section class="panel">
+<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Director's shot list</h2><span class="hint" id="status">Ready to generate</span></div>
+<div class="stats"><span id="shotstat">10 shots</span><span id="lengthstat">~80 seconds total</span><span id="modelstat">Wan / ComfyUI</span></div>
+<div id="output" class="output" aria-live="polite">Your connected shot prompts will appear here.
+
+Choose a film style, describe the scene, then select Generate shot prompts.</div>
+<div class="btns"><button class="btn" id="copy">Copy all prompts</button><button class="btn secondary" id="download">Download .txt</button></div>
+<p class="hint" style="font-size:12px">Tip: generate a character reference image first, then reuse it as the reference frame for each shot to improve identity consistency. Actual results depend on the selected model and settings.</p>
+</section></div></main>
+<script>
+const $=id=>document.getElementById(id);
+let latest='';
+const shotTypes=[
+['Establishing wide','A sweeping establishing wide shot introduces the location and atmosphere.'],
+['Character introduction','A medium portrait introduces the first lead with a composed, expressive performance.'],
+['Reaction close-up','A close-up captures a subtle, believable emotional reaction.'],
+['Two-shot','A balanced two-shot places both leads in the same frame with clear eyelines.'],
+['Moving master','A smooth tracking shot follows the characters through the environment.'],
+['Detail insert','A cinematic insert captures a meaningful prop, hand gesture or environmental detail.'],
+['Over-the-shoulder','An over-the-shoulder composition connects the characters through eyeline and blocking.'],
+['Performance beat','A medium-wide performance shot carries the central story action.'],
+['Emotional close-up','A restrained close-up lands the emotional turning point.'],
+['Closing master','A memorable final wide shot resolves the beat and leaves visual room for the next scene.'],
+['Alternate angle','A complementary angle preserves screen direction and scene geography.'],
+['Transition shot','A motivated transition shot leads naturally into the following sequence.'],
+['Atmosphere cutaway','A short environmental cutaway reinforces mood, weather and place.'],
+['Hero frame','A strong composed hero frame captures the film’s visual identity.'],
+['End beat','A final held composition gives the editor a clean cut point.']
+];
+function generate(){
+ const v=id=>$(id).value.trim(), n=Number(v('count')), secs=Number(v('duration').split(' ')[0]);
+ const fields={style:v('industry'),genre:v('genre'),language:v('language'),setting:v('setting'),characters:v('characters'),story:v('story'),ratio:v('ratio'),model:v('model'),look:v('look')};
+ const lines=['MATANGI FILMS — INDIAN CINEMA PROMPT MACHINE','PRODUCTION: '+fields.style+' / '+fields.genre,'TARGET: '+fields.model+' | FORMAT: '+fields.ratio+' | CLIP LENGTH: '+secs+' seconds each','LANGUAGE: '+fields.language,'','CONTINUITY BIBLE','Characters: '+fields.characters,'Location: '+fields.setting,'Visual style: '+fields.look+'. Maintain consistent faces, wardrobe, props, lighting direction, time of day, screen direction and geography across all shots.','Story beat: '+fields.story,'','SHOT-BY-SHOT PROMPTS'];
+ for(let i=0;i<n;i++){
+  const [name,desc]=shotTypes[i%shotTypes.length];
+  lines.push('\nSHOT '+String(i+1).padStart(2,'0')+' — '+name+' ('+secs+' seconds)');
+  lines.push('Prompt: '+fields.look+', '+fields.style+' visual language, '+fields.genre+' scene. '+desc+' '+fields.story+' Setting: '+fields.setting+'. Characters: '+fields.characters+' Camera: '+(i===0?'slow crane or dolly establishing move':i%3===0?'controlled lateral tracking move':i%3===1?'subtle push-in':'locked-off composed frame')+'. Natural movement, realistic anatomy, coherent hands and faces, physically plausible lighting, cinematic depth, carefully controlled focus, polished production design. '+fields.ratio+' composition, '+secs+' seconds. Dialogue language: '+fields.language+'.');
+  lines.push('Negative prompt: identity drift, face morphing, extra fingers, malformed hands, duplicated people, flicker, jitter, warped architecture, inconsistent wardrobe, inconsistent props, unreadable text, logos, watermarks, abrupt camera jumps, low resolution, over-sharpening.');
+ }
+ lines.push('\nEDITING / CONTINUITY NOTES','1. Use the same approved character reference images for every shot.','2. Keep wardrobe, accessories, location layout and lighting direction locked.','3. Generate each shot separately; review before assembling.','4. Assemble approved clips in a video editor and add licensed music, dialogue and sound effects.','5. These are prompts only; no video is generated by this page.');
+ latest=lines.join('\n');$('output').textContent=latest;$('status').textContent='Generated locally';$('shotstat').textContent=n+' shots';$('lengthstat').textContent='~'+(n*secs)+' seconds total';$('modelstat').textContent=fields.model;
+}
+$('generate').addEventListener('click',generate);
+$('sample').addEventListener('click',()=>{ $('industry').value='Odia cinema';$('genre').value='Romantic drama';$('language').value='Odia';$('setting').value='A quiet riverside ghat in Odisha at monsoon dusk';$('characters').value='Two original adult Odia lead characters in elegant contemporary traditional clothing; keep the same faces, hairstyle and wardrobe across all shots.';$('story').value='Two old friends meet beside the river after a long separation; a gentle conversation turns into a hopeful new beginning.';$('look').value='Warm filmic romance';generate();});
+$('copy').addEventListener('click',async()=>{if(!latest)generate();try{await navigator.clipboard.writeText(latest);$('status').textContent='Copied to clipboard';}catch(e){$('status').textContent='Clipboard unavailable — use Download .txt';}});
+$('download').addEventListener('click',()=>{if(!latest)generate();const a=document.createElement('a'),u=URL.createObjectURL(new Blob([latest],{type:'text/plain;charset=utf-8'}));a.href=u;a.download='matangi-indian-cinema-shot-prompts.txt';a.click();URL.revokeObjectURL(u);$('status').textContent='Prompt pack downloaded';});
+generate();
+</script></body></html>
