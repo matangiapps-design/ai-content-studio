@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from server.routers import (
+from server.routers import (\n    matangi_core,
     generation, publish, tools, brand, studio, retouch,
     campaigns, clipper, director, videofx, wan3,
     explainer, social, style, timeline, openshorts
@@ -111,6 +111,7 @@ def logout():
 
 # Include routers
 app.include_router(generation.router, prefix="/api/generate", tags=["Generation"])
+app.include_router(matangi_core.router, prefix="/api/matangi", tags=["MATANGI Core"])
 app.include_router(clipper.router, prefix="/api/clipper", tags=["Clipper"])
 app.include_router(videofx.router, prefix="/api/videofx", tags=["VideoFX Flow"])
 app.include_router(wan3.router, prefix="/api/wan3", tags=["Wan 3.0 Video"])
